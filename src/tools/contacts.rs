@@ -359,9 +359,7 @@ pub async fn try_handle(
             if contacts.is_empty() {
                 "No contacts found.".to_string()
             } else {
-                serde_json::to_string_pretty(
-                    &contacts.iter().map(user_record).collect::<Vec<_>>(),
-                )?
+                serde_json::to_string_pretty(&contacts.iter().map(user_record).collect::<Vec<_>>())?
             }
         }
 
@@ -413,7 +411,10 @@ pub async fn try_handle(
                             .as_deref()
                             .map(|s| s.to_lowercase().contains(&q))
                             .unwrap_or(false)
-                        || u.phone.as_deref().map(|s| s.contains(query)).unwrap_or(false)
+                        || u.phone
+                            .as_deref()
+                            .map(|s| s.contains(query))
+                            .unwrap_or(false)
                 })
                 .collect();
             if matched.is_empty() {
@@ -646,7 +647,11 @@ pub async fn try_handle(
                 .map(|(i, c)| {
                     tl::enums::InputContact::InputPhoneContact(tl::types::InputPhoneContact {
                         client_id: i as i64,
-                        phone: c.get("phone").and_then(|v| v.as_str()).unwrap_or("").to_string(),
+                        phone: c
+                            .get("phone")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("")
+                            .to_string(),
                         first_name: c
                             .get("first_name")
                             .and_then(|v| v.as_str())

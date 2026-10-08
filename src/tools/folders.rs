@@ -150,7 +150,7 @@ async fn resolve_input_peer(
 // Deterministic FNV-1a revision of a canonical folder state (no extra deps).
 fn revision(canonical: &Value) -> String {
     let text = serde_json::to_string(canonical).unwrap_or_default();
-    let mut h: u64 = 0xcbf29ce4_8422225;
+    let mut h: u64 = 0x0cbf_29ce_4842_2225;
     for b in text.bytes() {
         h ^= b as u64;
         h = h.wrapping_mul(0x100_0000_01b3);
@@ -242,7 +242,9 @@ async fn read_limits(client: &Client) -> FolderLimits {
     };
     let mut values: HashMap<String, i64> = HashMap::new();
     let mut config_available = false;
-    if let Ok(res) = client.invoke(&tl::functions::help::GetAppConfig { hash: 0 }).await
+    if let Ok(res) = client
+        .invoke(&tl::functions::help::GetAppConfig { hash: 0 })
+        .await
         && let tl::enums::help::AppConfig::Config(cfg) = res
         && let tl::enums::Jsonvalue::JsonObject(obj) = cfg.config
     {
@@ -295,7 +297,11 @@ async fn get_folder_limits(client: &Client) -> anyhow::Result<String> {
 async fn get_folder_snapshot(client: &Client) -> anyhow::Result<String> {
     let filters = dialog_filters(client).await?;
     let me = self_id(client).await?;
-    let folders: Vec<Value> = filters.filters.iter().map(|f| folder_state(f, me)).collect();
+    let folders: Vec<Value> = filters
+        .filters
+        .iter()
+        .map(|f| folder_state(f, me))
+        .collect();
     let order: Vec<i32> = folders
         .iter()
         .filter_map(|s| s.get("id").and_then(Value::as_i64).map(|id| id as i32))
@@ -340,7 +346,9 @@ fn validate_patch(patch: &Map<String, Value>) -> anyhow::Result<()> {
     if let Some(v) = patch.get("color")
         && !v.is_null()
     {
-        let n = v.as_i64().context("Error: folder color must be -1..6 or null.")?;
+        let n = v
+            .as_i64()
+            .context("Error: folder color must be -1..6 or null.")?;
         if !(-1..=6).contains(&n) {
             bail!("Error: folder color must be -1..6 or null.");
         }
@@ -426,9 +434,11 @@ async fn apply_patch(
             let mut peers = Vec::new();
             for id in v.as_array().cloned().unwrap_or_default() {
                 let n = id.as_i64().unwrap_or(0);
-                peers.push(resolve_input_peer(client, &id, dialogs, me).await.with_context(
-                    || format!("Failed to resolve peer id {n} in '{name}'"),
-                )?);
+                peers.push(
+                    resolve_input_peer(client, &id, dialogs, me)
+                        .await
+                        .with_context(|| format!("Failed to resolve peer id {n} in '{name}'"))?,
+                );
             }
             *slot = peers;
         }
@@ -436,10 +446,10 @@ async fn apply_patch(
     Ok(())
 }
 
-fn find_folder<'a>(
-    filters: &'a [tl::enums::DialogFilter],
+fn find_folder(
+    filters: &[tl::enums::DialogFilter],
     folder_id: i32,
-) -> Option<&'a tl::enums::DialogFilter> {
+) -> Option<&tl::enums::DialogFilter> {
     filters.iter().find(|f| folder_id_of(f) == folder_id)
 }
 
@@ -464,7 +474,9 @@ async fn update_folder(client: &Client, args: &Value) -> anyhow::Result<String> 
         bail!("Error: shared folders cannot be edited by update_folder.");
     };
 
-    let before = revision(&json!({"id": current.id, "type": "private", "definition": private_definition(current, me)}));
+    let before = revision(
+        &json!({"id": current.id, "type": "private", "definition": private_definition(current, me)}),
+    );
     if let Some(exp) = expected_revision
         && exp != before
     {
@@ -507,7 +519,9 @@ async fn update_folder(client: &Client, args: &Value) -> anyhow::Result<String> 
         bail!("Error: pinned peer count exceeds the configured per-folder limit ({limit}).");
     }
 
-    let after = revision(&json!({"id": updated.id, "type": "private", "definition": private_definition(&updated, me)}));
+    let after = revision(
+        &json!({"id": updated.id, "type": "private", "definition": private_definition(&updated, me)}),
+    );
     if before == after {
         return Ok(serde_json::to_string_pretty(&json!({
             "success": true, "folder_id": folder_id,
@@ -519,8 +533,12 @@ async fn update_folder(client: &Client, args: &Value) -> anyhow::Result<String> 
     let latest = dialog_filters(client).await?;
     match find_folder(&latest.filters, folder_id) {
         Some(tl::enums::DialogFilter::Filter(cur))
-            if revision(&json!({"id": cur.id, "type": "private", "definition": private_definition(cur, me)})) == before => {}
-        _ => bail!("Error: folder changed while preparing the update; read a fresh snapshot first."),
+            if revision(
+                &json!({"id": cur.id, "type": "private", "definition": private_definition(cur, me)}),
+            ) == before => {}
+        _ => {
+            bail!("Error: folder changed while preparing the update; read a fresh snapshot first.")
+        }
     }
 
     client
@@ -606,18 +624,18 @@ fn peer_chat_info(
 async fn get_folder(client: &Client, args: &Value) -> anyhow::Result<String> {
     let folder_id = i64_arg(args, "folder_id", 0) as i32;
     let filters = dialog_filters(client).await?;
-    let target = find_folder(&filters.filters, folder_id)
-        .with_context(|| format!("Folder with ID {folder_id} not found. Use list_folders to see available folders."))?;
+    let target = find_folder(&filters.filters, folder_id).with_context(|| {
+        format!("Folder with ID {folder_id} not found. Use list_folders to see available folders.")
+    })?;
 
     let me = self_id(client).await?;
     let dialogs = dialog_map(client).await?;
-    let info =
-        |peers: &[tl::enums::InputPeer]| -> Vec<Value> {
-            peers
-                .iter()
-                .map(|p| peer_chat_info(p, me, &dialogs))
-                .collect()
-        };
+    let info = |peers: &[tl::enums::InputPeer]| -> Vec<Value> {
+        peers
+            .iter()
+            .map(|p| peer_chat_info(p, me, &dialogs))
+            .collect()
+    };
 
     let data = match target {
         tl::enums::DialogFilter::Default => bail!("Folder {folder_id} is the system folder."),
@@ -678,7 +696,9 @@ async fn create_folder(client: &Client, args: &Value) -> anyhow::Result<String> 
     if let Some(limit) = read_limits(client).await.folders
         && count >= limit as usize
     {
-        bail!("Cannot create folder: you've reached Telegram's folder limit of {limit} for your account. Delete a folder first.");
+        bail!(
+            "Cannot create folder: you've reached Telegram's folder limit of {limit} for your account. Delete a folder first."
+        );
     }
     let mut new_id: i32 = 2;
     while existing.contains(&new_id) {
@@ -688,7 +708,12 @@ async fn create_folder(client: &Client, args: &Value) -> anyhow::Result<String> 
     let me = self_id(client).await?;
     let dialogs = dialog_map(client).await?;
     let mut include_peers = Vec::new();
-    for chat in args.get("chat_ids").and_then(Value::as_array).cloned().unwrap_or_default() {
+    for chat in args
+        .get("chat_ids")
+        .and_then(Value::as_array)
+        .cloned()
+        .unwrap_or_default()
+    {
         include_peers.push(resolve_input_peer(client, &chat, &dialogs, me).await?);
     }
 
@@ -707,7 +732,10 @@ async fn create_folder(client: &Client, args: &Value) -> anyhow::Result<String> 
             text: title.to_string(),
             entities: vec![],
         }),
-        emoticon: args.get("emoticon").and_then(Value::as_str).map(str::to_string),
+        emoticon: args
+            .get("emoticon")
+            .and_then(Value::as_str)
+            .map(str::to_string),
         color: None,
         pinned_peers: vec![],
         include_peers,
@@ -752,8 +780,9 @@ async fn add_chat_to_folder(client: &Client, args: &Value) -> anyhow::Result<Str
     let pinned = bool_arg(args, "pinned", false);
 
     let filters = dialog_filters(client).await?;
-    let target = find_folder(&filters.filters, folder_id)
-        .with_context(|| format!("Folder with ID {folder_id} not found. Use list_folders to see available folders."))?;
+    let target = find_folder(&filters.filters, folder_id).with_context(|| {
+        format!("Folder with ID {folder_id} not found. Use list_folders to see available folders.")
+    })?;
 
     let me = self_id(client).await?;
     let dialogs = dialog_map(client).await?;
@@ -762,16 +791,12 @@ async fn add_chat_to_folder(client: &Client, args: &Value) -> anyhow::Result<Str
 
     let (include, pinned_list, shared) = match target {
         tl::enums::DialogFilter::Default => bail!("Folder {folder_id} is the system folder."),
-        tl::enums::DialogFilter::Filter(f) => (
-            f.include_peers.clone(),
-            f.pinned_peers.clone(),
-            false,
-        ),
-        tl::enums::DialogFilter::Chatlist(c) => (
-            c.include_peers.clone(),
-            c.pinned_peers.clone(),
-            true,
-        ),
+        tl::enums::DialogFilter::Filter(f) => {
+            (f.include_peers.clone(), f.pinned_peers.clone(), false)
+        }
+        tl::enums::DialogFilter::Chatlist(c) => {
+            (c.include_peers.clone(), c.pinned_peers.clone(), true)
+        }
     };
     let already_included = include.iter().any(|p| peer_key(p, me) == key);
     let already_pinned = pinned_list.iter().any(|p| peer_key(p, me) == key);
@@ -821,8 +846,9 @@ async fn remove_chat_from_folder(client: &Client, args: &Value) -> anyhow::Resul
     let chat_id = args.get("chat_id").cloned().unwrap_or(Value::Null);
 
     let filters = dialog_filters(client).await?;
-    let target = find_folder(&filters.filters, folder_id)
-        .with_context(|| format!("Folder with ID {folder_id} not found. Use list_folders to see available folders."))?;
+    let target = find_folder(&filters.filters, folder_id).with_context(|| {
+        format!("Folder with ID {folder_id} not found. Use list_folders to see available folders.")
+    })?;
 
     let me = self_id(client).await?;
     let dialogs = dialog_map(client).await?;
@@ -833,12 +859,28 @@ async fn remove_chat_from_folder(client: &Client, args: &Value) -> anyhow::Resul
     let (include, pinned_list) = match target {
         tl::enums::DialogFilter::Default => bail!("Folder {folder_id} is the system folder."),
         tl::enums::DialogFilter::Filter(f) => (
-            f.include_peers.iter().filter(|p| keep(p)).cloned().collect::<Vec<_>>(),
-            f.pinned_peers.iter().filter(|p| keep(p)).cloned().collect::<Vec<_>>(),
+            f.include_peers
+                .iter()
+                .filter(|p| keep(p))
+                .cloned()
+                .collect::<Vec<_>>(),
+            f.pinned_peers
+                .iter()
+                .filter(|p| keep(p))
+                .cloned()
+                .collect::<Vec<_>>(),
         ),
         tl::enums::DialogFilter::Chatlist(c) => (
-            c.include_peers.iter().filter(|p| keep(p)).cloned().collect::<Vec<_>>(),
-            c.pinned_peers.iter().filter(|p| keep(p)).cloned().collect::<Vec<_>>(),
+            c.include_peers
+                .iter()
+                .filter(|p| keep(p))
+                .cloned()
+                .collect::<Vec<_>>(),
+            c.pinned_peers
+                .iter()
+                .filter(|p| keep(p))
+                .cloned()
+                .collect::<Vec<_>>(),
         ),
     };
     let before_count = |f: &tl::enums::DialogFilter| match f {
@@ -901,7 +943,9 @@ async fn delete_folder(client: &Client, args: &Value) -> anyhow::Result<String> 
         })
         .await
         .context("messages.updateDialogFilter failed")?;
-    Ok(format!("Folder '{title}' (ID {folder_id}) deleted. Chats are preserved."))
+    Ok(format!(
+        "Folder '{title}' (ID {folder_id}) deleted. Chats are preserved."
+    ))
 }
 
 async fn reorder_folders(client: &Client, args: &Value) -> anyhow::Result<String> {

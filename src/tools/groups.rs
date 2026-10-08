@@ -65,7 +65,10 @@ async fn resolve_user_peer(client: &Client, value: &Value) -> anyhow::Result<Pee
     let pr = resolve_peer(client, value).await?;
     match pr.id.kind() {
         PeerKind::User | PeerKind::UserSelf => Ok(pr),
-        _ => bail!("Expected a user, but the argument resolved to a {}", kind_name(&pr)),
+        _ => bail!(
+            "Expected a user, but the argument resolved to a {}",
+            kind_name(&pr)
+        ),
     }
 }
 
@@ -496,7 +499,9 @@ async fn get_participants(client: &Client, args: &Value) -> anyhow::Result<Strin
         return Ok("Error: page must be at least 1.".to_string());
     }
     if !(1..=1000).contains(&page_size) {
-        return Ok("Error: page_size must be between 1 and 1000 participants per request.".to_string());
+        return Ok(
+            "Error: page_size must be between 1 and 1000 participants per request.".to_string(),
+        );
     }
     let chat = resolve_peer(client, args.get("chat_id").context("chat_id is required")?).await?;
     if chat.id.kind() == PeerKind::User {
@@ -522,7 +527,10 @@ async fn get_participants(client: &Client, args: &Value) -> anyhow::Result<Strin
         return Ok("No participants found.".to_string());
     }
     let mut out = records.join("\n");
-    out.push_str(&format!("\n\nPage {page} (showing {} participants)", records.len()));
+    out.push_str(&format!(
+        "\n\nPage {page} (showing {} participants)",
+        records.len()
+    ));
     if has_more {
         out.push_str(&format!(" — more results available on page {}", page + 1));
     }
@@ -672,7 +680,9 @@ async fn delete_chat_photo(client: &Client, args: &Value) -> anyhow::Result<Stri
                 .context("messages.editChatPhoto failed")?;
         }
         PeerKind::User => return Ok("Error: cannot delete the photo of a user chat.".to_string()),
-        PeerKind::UserSelf => return Ok("Error: cannot delete the photo of a user chat.".to_string()),
+        PeerKind::UserSelf => {
+            return Ok("Error: cannot delete the photo of a user chat.".to_string());
+        }
     }
     Ok("Chat photo deleted.".to_string())
 }
@@ -685,11 +695,8 @@ async fn promote_admin(client: &Client, args: &Value) -> anyhow::Result<String> 
     )
     .await?;
     let channel = require_channel(&chat)?;
-    let user = resolve_user_peer(
-        client,
-        args.get("user_id").context("user_id is required")?,
-    )
-    .await?;
+    let user =
+        resolve_user_peer(client, args.get("user_id").context("user_id is required")?).await?;
     let rank = str_arg(args, "rank");
     let rank = if rank.is_empty() { "Admin" } else { rank };
     let rights_obj = args.get("rights");
@@ -723,11 +730,8 @@ async fn demote_admin(client: &Client, args: &Value) -> anyhow::Result<String> {
     )
     .await?;
     let channel = require_channel(&chat)?;
-    let user = resolve_user_peer(
-        client,
-        args.get("user_id").context("user_id is required")?,
-    )
-    .await?;
+    let user =
+        resolve_user_peer(client, args.get("user_id").context("user_id is required")?).await?;
     client
         .invoke(&tl::functions::channels::EditAdmin {
             channel,
@@ -744,11 +748,8 @@ async fn demote_admin(client: &Client, args: &Value) -> anyhow::Result<String> {
 async fn ban_user(client: &Client, args: &Value) -> anyhow::Result<String> {
     let chat = resolve_peer(client, args.get("chat_id").context("chat_id is required")?).await?;
     let channel = require_channel(&chat)?;
-    let user = resolve_user_peer(
-        client,
-        args.get("user_id").context("user_id is required")?,
-    )
-    .await?;
+    let user =
+        resolve_user_peer(client, args.get("user_id").context("user_id is required")?).await?;
     let name = peer_display_name(client, &chat).await;
     client
         .invoke(&tl::functions::channels::EditBanned {
@@ -765,11 +766,8 @@ async fn ban_user(client: &Client, args: &Value) -> anyhow::Result<String> {
 async fn unban_user(client: &Client, args: &Value) -> anyhow::Result<String> {
     let chat = resolve_peer(client, args.get("chat_id").context("chat_id is required")?).await?;
     let channel = require_channel(&chat)?;
-    let user = resolve_user_peer(
-        client,
-        args.get("user_id").context("user_id is required")?,
-    )
-    .await?;
+    let user =
+        resolve_user_peer(client, args.get("user_id").context("user_id is required")?).await?;
     let name = peer_display_name(client, &chat).await;
     client
         .invoke(&tl::functions::channels::EditBanned {
@@ -785,11 +783,8 @@ async fn unban_user(client: &Client, args: &Value) -> anyhow::Result<String> {
 /// Remove a user from a group or channel WITHOUT banning them.
 async fn remove_user(client: &Client, args: &Value) -> anyhow::Result<String> {
     let chat = resolve_peer(client, args.get("chat_id").context("chat_id is required")?).await?;
-    let user = resolve_user_peer(
-        client,
-        args.get("user_id").context("user_id is required")?,
-    )
-    .await?;
+    let user =
+        resolve_user_peer(client, args.get("user_id").context("user_id is required")?).await?;
     let name = peer_display_name(client, &chat).await;
     let me_id = client.get_me().await?.id().bare_id();
     let is_self = match user.id.kind() {
@@ -798,8 +793,10 @@ async fn remove_user(client: &Client, args: &Value) -> anyhow::Result<String> {
         _ => false,
     };
     if is_self {
-        return Ok("Error: remove_user cannot target the current account. Use leave_chat instead."
-            .to_string());
+        return Ok(
+            "Error: remove_user cannot target the current account. Use leave_chat instead."
+                .to_string(),
+        );
     }
     match chat.id.kind() {
         PeerKind::Chat => {
@@ -818,8 +815,10 @@ async fn remove_user(client: &Client, args: &Value) -> anyhow::Result<String> {
                     if msg.contains("USER_NOT_PARTICIPANT") {
                         Ok("Error: The user is not a member of this chat.".to_string())
                     } else if msg.contains("CHAT_ADMIN_REQUIRED") {
-                        Ok("Error: admin rights required to remove members from this chat."
-                            .to_string())
+                        Ok(
+                            "Error: admin rights required to remove members from this chat."
+                                .to_string(),
+                        )
                     } else if msg.contains("USER_ADMIN_INVALID") {
                         Ok("Error: Cannot remove this user - they are an admin. Demote them first (demote_admin).".to_string())
                     } else {
@@ -840,13 +839,11 @@ async fn remove_user(client: &Client, args: &Value) -> anyhow::Result<String> {
                 .await
                 .context("channels.getParticipant failed")?;
             let is_member = match found {
-                tl::enums::channels::ChannelParticipant::Participant(p) => {
-                    !matches!(
-                        p.participant,
-                        tl::enums::ChannelParticipant::Left(_)
-                            | tl::enums::ChannelParticipant::Banned(_)
-                    )
-                }
+                tl::enums::channels::ChannelParticipant::Participant(p) => !matches!(
+                    p.participant,
+                    tl::enums::ChannelParticipant::Left(_)
+                        | tl::enums::ChannelParticipant::Banned(_)
+                ),
             };
             if !is_member {
                 return Ok("Error: The user is not a member of this chat.".to_string());
@@ -880,7 +877,9 @@ async fn remove_user(client: &Client, args: &Value) -> anyhow::Result<String> {
             }
         }
         PeerKind::User => Ok("Error: chat_id must be a group or channel, not a user.".to_string()),
-        PeerKind::UserSelf => Ok("Error: chat_id must be a group or channel, not a user.".to_string()),
+        PeerKind::UserSelf => {
+            Ok("Error: chat_id must be a group or channel, not a user.".to_string())
+        }
     }
 }
 
@@ -889,9 +888,8 @@ async fn remove_user(client: &Client, args: &Value) -> anyhow::Result<String> {
 async fn set_default_chat_permissions(client: &Client, args: &Value) -> anyhow::Result<String> {
     let chat = resolve_peer(client, args.get("chat_id").context("chat_id is required")?).await?;
     // Telegram semantics are inverted (True = banned), the tool args say what is allowed.
-    let banned = |key: &str, allowed_default: bool| -> bool {
-        !bool_arg(args, key, allowed_default)
-    };
+    let banned =
+        |key: &str, allowed_default: bool| -> bool { !bool_arg(args, key, allowed_default) };
     let until_date = i64_arg(args, "until_date", 0) as i32;
     client
         .invoke(&tl::functions::messages::EditChatDefaultBannedRights {
@@ -951,11 +949,8 @@ async fn toggle_slow_mode(client: &Client, args: &Value) -> anyhow::Result<Strin
 async fn edit_admin_rights(client: &Client, args: &Value) -> anyhow::Result<String> {
     let chat = resolve_peer(client, args.get("chat_id").context("chat_id is required")?).await?;
     let channel = require_channel(&chat)?;
-    let user = resolve_user_peer(
-        client,
-        args.get("user_id").context("user_id is required")?,
-    )
-    .await?;
+    let user =
+        resolve_user_peer(client, args.get("user_id").context("user_id is required")?).await?;
     let rank = str_arg(args, "rank");
     let rights = admin_rights_individual(
         bool_arg(args, "change_info", false),
@@ -1012,11 +1007,8 @@ async fn get_admins(client: &Client, args: &Value) -> anyhow::Result<String> {
 async fn get_member_admin_status(client: &Client, args: &Value) -> anyhow::Result<String> {
     let chat = resolve_peer(client, args.get("chat_id").context("chat_id is required")?).await?;
     let channel = require_channel(&chat)?;
-    let user = resolve_user_peer(
-        client,
-        args.get("user_id").context("user_id is required")?,
-    )
-    .await?;
+    let user =
+        resolve_user_peer(client, args.get("user_id").context("user_id is required")?).await?;
     let result = client
         .invoke(&tl::functions::channels::GetParticipant {
             channel,
@@ -1153,15 +1145,14 @@ async fn join_by_hash(client: &Client, hash: &str) -> anyhow::Result<String> {
             hash: hash.to_string(),
         })
         .await
+        && let tl::enums::ChatInvite::Already(a) = info
     {
-        if let tl::enums::ChatInvite::Already(a) = info {
-            let title = match &a.chat {
-                tl::enums::Chat::Chat(c) => c.title.clone(),
-                tl::enums::Chat::Channel(c) => c.title.clone(),
-                _ => "Unknown Chat".to_string(),
-            };
-            return Ok(format!("You are already a member of this chat: {title}"));
-        }
+        let title = match &a.chat {
+            tl::enums::Chat::Chat(c) => c.title.clone(),
+            tl::enums::Chat::Channel(c) => c.title.clone(),
+            _ => "Unknown Chat".to_string(),
+        };
+        return Ok(format!("You are already a member of this chat: {title}"));
     }
     let result = client
         .invoke(&tl::functions::messages::ImportChatInvite {
@@ -1181,8 +1172,10 @@ async fn join_by_hash(client: &Client, hash: &str) -> anyhow::Result<String> {
             } else if msg.contains("admin") {
                 Ok("Cannot join this chat - requires admin approval.".to_string())
             } else if msg.contains("too much") || msg.contains("too many") {
-                Ok("Cannot join this chat - it has reached maximum number of participants."
-                    .to_string())
+                Ok(
+                    "Cannot join this chat - it has reached maximum number of participants."
+                        .to_string(),
+                )
             } else {
                 Err(anyhow::anyhow!("messages.importChatInvite failed: {e}"))
             }

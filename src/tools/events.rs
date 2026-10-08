@@ -84,7 +84,9 @@ pub async fn try_handle(
         | "enable_incoming_feed"
         | "disable_incoming_feed"
         | "incoming_feed_status" => {
-            anyhow::bail!("not supported: event-driven tools need the Telegram update stream, which is not wired in this build (see TODO in tools/events.rs)")
+            anyhow::bail!(
+                "not supported: event-driven tools need the Telegram update stream, which is not wired in this build (see TODO in tools/events.rs)"
+            )
         }
         _ => Ok(None),
     }

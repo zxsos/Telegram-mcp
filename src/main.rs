@@ -91,10 +91,7 @@ async fn serve() -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn handle_request(
-    client: Option<&Client>,
-    req: &JsonRpcRequest,
-) -> Option<JsonRpcResponse> {
+async fn handle_request(client: Option<&Client>, req: &JsonRpcRequest) -> Option<JsonRpcResponse> {
     let id = req.id.clone();
 
     match req.method.as_str() {
@@ -134,10 +131,7 @@ async fn handle_request(
 
         "tools/call" => {
             let params = req.params.as_ref().cloned().unwrap_or(Value::Null);
-            let tool_name = params
-                .get("name")
-                .and_then(|n| n.as_str())
-                .unwrap_or("");
+            let tool_name = params.get("name").and_then(|n| n.as_str()).unwrap_or("");
             let arguments = params
                 .get("arguments")
                 .cloned()

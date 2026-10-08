@@ -12,7 +12,7 @@
 //! - PDF text extraction is not implemented (would need a PDF parsing crate);
 //!   PDFs are saved to a temp file and their path is returned.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use anyhow::{Context, Result, bail};
@@ -38,7 +38,11 @@ async fn resolve_chat(client: &Client, chat_id: &Value) -> Result<PeerRef> {
     if let Some(id) = chat_id.as_i64() {
         return resolve_chat_by_id(client, id).await;
     }
-    let name = chat_id.as_str().unwrap_or("").trim().trim_start_matches('@');
+    let name = chat_id
+        .as_str()
+        .unwrap_or("")
+        .trim()
+        .trim_start_matches('@');
     if name.is_empty() {
         bail!("chat_id is required");
     }
@@ -99,7 +103,11 @@ fn chat_label(chat_id: &Value) -> String {
 
 fn is_photo_ext(path: &str) -> bool {
     matches!(
-        path.rsplit('.').next().unwrap_or("").to_ascii_lowercase().as_str(),
+        path.rsplit('.')
+            .next()
+            .unwrap_or("")
+            .to_ascii_lowercase()
+            .as_str(),
         "jpg" | "jpeg" | "png" | "bmp" | "tif" | "tiff"
     )
 }
@@ -141,10 +149,19 @@ fn parse_iso8601(s: &str) -> Result<SystemTime> {
         let rest = &s[tpos + 1..];
         match rest.rfind(['+', '-']) {
             Some(i) => {
-                let (hh, mm) = rest[i + 1..].split_once(':').context("bad timezone offset")?;
+                let (hh, mm) = rest[i + 1..]
+                    .split_once(':')
+                    .context("bad timezone offset")?;
                 let secs: i64 = hh.parse::<i64>().context("bad tz hours")? * 3600
                     + mm.parse::<i64>().context("bad tz minutes")? * 60;
-                (&s[..tpos + 1 + i], if rest[i..].starts_with('-') { secs } else { -secs })
+                (
+                    &s[..tpos + 1 + i],
+                    if rest[i..].starts_with('-') {
+                        secs
+                    } else {
+                        -secs
+                    },
+                )
             }
             None => (s, 0),
         }
@@ -155,13 +172,19 @@ fn parse_iso8601(s: &str) -> Result<SystemTime> {
     let mut dp = date.split('-');
     let (y, m, d): (i64, i64, i64) = (
         dp.next().context("bad year")?.parse().context("bad year")?,
-        dp.next().context("bad month")?.parse().context("bad month")?,
+        dp.next()
+            .context("bad month")?
+            .parse()
+            .context("bad month")?,
         dp.next().context("bad day")?.parse().context("bad day")?,
     );
     let mut tp = time.split(':');
     let (hh, mm, ss): (i64, i64, i64) = (
         tp.next().context("bad hour")?.parse().context("bad hour")?,
-        tp.next().context("bad minute")?.parse().context("bad minute")?,
+        tp.next()
+            .context("bad minute")?
+            .parse()
+            .context("bad minute")?,
         tp.next()
             .unwrap_or("0")
             .split(['.', ','])
@@ -176,10 +199,10 @@ fn parse_iso8601(s: &str) -> Result<SystemTime> {
 
 /// Download media bytes fully into memory, enforcing the size limit.
 async fn download_bytes(client: &Client, media: &Media) -> Result<Vec<u8>> {
-    if let Some(size) = media.size() {
-        if size > MAX_DOWNLOAD_BYTES {
-            bail!("media is too large ({size} bytes, limit {MAX_DOWNLOAD_BYTES})");
-        }
+    if let Some(size) = media.size()
+        && size > MAX_DOWNLOAD_BYTES
+    {
+        bail!("media is too large ({size} bytes, limit {MAX_DOWNLOAD_BYTES})");
     }
     let mut iter = client.iter_download(media);
     let mut buf = Vec::new();
@@ -202,20 +225,27 @@ async fn upload_many(client: &Client, paths: &[&str]) -> Result<Vec<Uploaded>> {
         if !std::path::Path::new(p).is_file() {
             bail!("file not found: {p}");
         }
-        out.push(client.upload_file(p).await.context(format!("upload failed: {p}"))?);
+        out.push(
+            client
+                .upload_file(p)
+                .await
+                .context(format!("upload failed: {p}"))?,
+        );
     }
     Ok(out)
 }
 
 fn topic_id_arg(args: &Value) -> Option<i32> {
-    args.get("topic_id").and_then(|v| v.as_i64()).map(|v| v as i32)
+    args.get("topic_id")
+        .and_then(|v| v.as_i64())
+        .map(|v| v as i32)
 }
 
-fn ensure_parent(path: &PathBuf) -> Result<()> {
-    if let Some(parent) = path.parent() {
-        if !parent.as_os_str().is_empty() {
-            std::fs::create_dir_all(parent).context("failed to create output directory")?;
-        }
+fn ensure_parent(path: &Path) -> Result<()> {
+    if let Some(parent) = path.parent()
+        && !parent.as_os_str().is_empty()
+    {
+        std::fs::create_dir_all(parent).context("failed to create output directory")?;
     }
     Ok(())
 }
@@ -251,8 +281,15 @@ async fn send_file(client: &Client, args: &Value) -> Result<String> {
             msg = msg.schedule_date(Some(dt));
         }
         let file = uploaded.into_iter().next().unwrap();
-        msg = if is_photo_ext(paths[0]) { msg.photo(file) } else { msg.document(file) };
-        client.send_message(peer, msg).await.context("send failed")?;
+        msg = if is_photo_ext(paths[0]) {
+            msg.photo(file)
+        } else {
+            msg.document(file)
+        };
+        client
+            .send_message(peer, msg)
+            .await
+            .context("send failed")?;
         return Ok(match schedule {
             Some(_) => format!("file from {} scheduled in chat {label}.", paths[0]),
             None => format!("file sent to chat {label} from {}.", paths[0]),
@@ -275,11 +312,21 @@ async fn send_file(client: &Client, args: &Value) -> Result<String> {
             }
             m = m.reply_to(topic_id);
         }
-        m = if is_photo_ext(paths[i]) { m.photo(file) } else { m.document(file) };
+        m = if is_photo_ext(paths[i]) {
+            m.photo(file)
+        } else {
+            m.document(file)
+        };
         medias.push(m);
     }
-    client.send_album(peer, medias).await.context("send failed")?;
-    Ok(format!("album of {} files sent to chat {label}.", paths.len()))
+    client
+        .send_album(peer, medias)
+        .await
+        .context("send failed")?;
+    Ok(format!(
+        "album of {} files sent to chat {label}.",
+        paths.len()
+    ))
 }
 
 async fn send_album(client: &Client, args: &Value) -> Result<String> {
@@ -313,11 +360,21 @@ async fn send_album(client: &Client, args: &Value) -> Result<String> {
             }
             m = m.reply_to(topic_id);
         }
-        m = if is_photo_ext(paths[i]) { m.photo(file) } else { m.document(file) };
+        m = if is_photo_ext(paths[i]) {
+            m.photo(file)
+        } else {
+            m.document(file)
+        };
         medias.push(m);
     }
-    client.send_album(peer, medias).await.context("send failed")?;
-    Ok(format!("album of {} files sent to chat {label}.", paths.len()))
+    client
+        .send_album(peer, medias)
+        .await
+        .context("send failed")?;
+    Ok(format!(
+        "album of {} files sent to chat {label}.",
+        paths.len()
+    ))
 }
 
 async fn download_media(client: &Client, args: &Value) -> Result<String> {
@@ -331,10 +388,10 @@ async fn download_media(client: &Client, args: &Value) -> Result<String> {
     let media = msg
         .media()
         .with_context(|| format!("no media found in message {message_id}"))?;
-    if let Some(size) = media.size() {
-        if size > MAX_DOWNLOAD_BYTES {
-            bail!("media is too large for download_media (limit {MAX_DOWNLOAD_BYTES} bytes)");
-        }
+    if let Some(size) = media.size()
+        && size > MAX_DOWNLOAD_BYTES
+    {
+        bail!("media is too large for download_media (limit {MAX_DOWNLOAD_BYTES} bytes)");
     }
 
     let default_ext = match &media {
@@ -378,7 +435,10 @@ async fn send_voice(client: &Client, args: &Value) -> Result<String> {
         })
         .mime_type("audio/ogg")
         .reply_to(topic_id_arg(args));
-    client.send_message(peer, msg).await.context("send failed")?;
+    client
+        .send_message(peer, msg)
+        .await
+        .context("send failed")?;
     Ok(format!("voice message sent to chat {label} from {path}."))
 }
 
@@ -442,8 +502,10 @@ async fn get_media_info(client: &Client, args: &Value) -> Result<String> {
             info["name"] = json!(d.name());
             info["mime_type"] = json!(d.mime_type());
             info["size"] = json!(d.size());
-            info["creation_date"] =
-                json!(d.creation_date().map(|t| t.format("%Y-%m-%d %H:%M:%S").to_string()));
+            info["creation_date"] = json!(
+                d.creation_date()
+                    .map(|t| t.format("%Y-%m-%d %H:%M:%S").to_string())
+            );
         }
         Media::Sticker(s) => {
             info["id"] = json!(s.document.id());
@@ -493,7 +555,10 @@ async fn send_sticker(client: &Client, args: &Value) -> Result<String> {
         .document(uploaded)
         .mime_type("image/webp")
         .reply_to(topic_id_arg(args));
-    client.send_message(peer, msg).await.context("send failed")?;
+    client
+        .send_message(peer, msg)
+        .await
+        .context("send failed")?;
     Ok(format!("sticker sent to chat {label} from {path}."))
 }
 
@@ -760,9 +825,16 @@ async fn inspect_document(client: &Client, args: &Value) -> Result<String> {
         Media::Sticker(_) => ("sticker.webp".to_string(), "image/webp".to_string()),
         _ => (String::new(), String::new()),
     };
-    let ext = filename.rsplit('.').next().unwrap_or("").to_ascii_lowercase();
+    let ext = filename
+        .rsplit('.')
+        .next()
+        .unwrap_or("")
+        .to_ascii_lowercase();
     let is_image = mime.starts_with("image/")
-        || matches!(ext.as_str(), "jpg" | "jpeg" | "png" | "webp" | "gif" | "bmp");
+        || matches!(
+            ext.as_str(),
+            "jpg" | "jpeg" | "png" | "webp" | "gif" | "bmp"
+        );
     let is_text = mime.starts_with("text/")
         || matches!(
             ext.as_str(),

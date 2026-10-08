@@ -131,8 +131,9 @@ fn parse_schedule_date(s: &str) -> anyhow::Result<SystemTime> {
         }
         return Ok(UNIX_EPOCH + Duration::from_secs(ts as u64));
     }
-    let err =
-        || format!("schedule_date '{s}' must be ISO-8601 (2026-05-01T14:30:00) or a unix timestamp");
+    let err = || {
+        format!("schedule_date '{s}' must be ISO-8601 (2026-05-01T14:30:00) or a unix timestamp")
+    };
     let (core, tz_secs): (&str, i64) = if let Some(stripped) = s.strip_suffix(&['Z', 'z'][..]) {
         (stripped, 0)
     } else {
@@ -345,15 +346,17 @@ async fn send_scheduled_message(client: &Client, args: &Value) -> anyhow::Result
         Some(Value::String(s)) => parse_schedule_date(s)?,
         _ => bail!("schedule_date is required (ISO-8601 string or unix timestamp)"),
     };
-    let input = InputMessage::new()
-        .text(message)
-        .schedule_date(Some(when));
+    let input = InputMessage::new().text(message).schedule_date(Some(when));
     let sent = client.send_message(peer, input).await?;
     let ts = when
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_secs() as i64)
         .unwrap_or(0);
-    Ok(format!("Scheduled message {} for {}.", sent.id(), fmt_ts(ts)))
+    Ok(format!(
+        "Scheduled message {} for {}.",
+        sent.id(),
+        fmt_ts(ts)
+    ))
 }
 
 async fn get_scheduled_messages(client: &Client, args: &Value) -> anyhow::Result<String> {
@@ -466,11 +469,11 @@ async fn press_inline_button(client: &Client, args: &Value) -> anyhow::Result<St
 
     let target: Option<Message> = match as_i64(args.get("message_id").unwrap_or(&Value::Null)) {
         Some(id) => {
-            let mut v = client.get_messages_by_id(peer.clone(), &[id as i32]).await?;
+            let mut v = client.get_messages_by_id(peer, &[id as i32]).await?;
             v.pop().flatten()
         }
         None => {
-            let mut iter = client.iter_messages(peer.clone());
+            let mut iter = client.iter_messages(peer);
             let mut found = None;
             for _ in 0..20 {
                 match iter.next().await? {
@@ -500,7 +503,10 @@ async fn press_inline_button(client: &Client, args: &Value) -> anyhow::Result<St
             .iter()
             .find(|b| b.text.trim().eq_ignore_ascii_case(t.trim()))
             .with_context(|| {
-                format!("Button '{t}' not found. Available: {}", available.join(", "))
+                format!(
+                    "Button '{t}' not found. Available: {}",
+                    available.join(", ")
+                )
             })?
     } else {
         let i = button_index.unwrap_or(-1);
@@ -722,34 +728,32 @@ async fn forward_message(client: &Client, args: &Value) -> anyhow::Result<String
     let mut expanded = false;
     if bool_arg(args, "expand_album", true) && ids.len() == 1 {
         let anchor = ids[0];
-        let got = client
-            .get_messages_by_id(from_peer.clone(), &[anchor])
-            .await?;
-        if let Some(m) = got.into_iter().flatten().next() {
-            if let Some(gid) = m.grouped_id() {
-                let window: Vec<i32> = ((anchor - 9).max(1)..=anchor + 10).collect();
-                let neighbors = client.get_messages_by_id(from_peer.clone(), &window).await?;
-                let mut sibs: Vec<i32> = neighbors
-                    .into_iter()
-                    .flatten()
-                    .filter(|n| n.grouped_id() == Some(gid))
-                    .map(|n| n.id())
-                    .collect();
-                sibs.sort_unstable();
-                sibs.dedup();
-                if sibs.len() > 1 {
-                    ids = sibs;
-                    expanded = true;
-                }
+        let got = client.get_messages_by_id(from_peer, &[anchor]).await?;
+        if let Some(m) = got.into_iter().flatten().next()
+            && let Some(gid) = m.grouped_id()
+        {
+            let window: Vec<i32> = ((anchor - 9).max(1)..=anchor + 10).collect();
+            let neighbors = client.get_messages_by_id(from_peer, &window).await?;
+            let mut sibs: Vec<i32> = neighbors
+                .into_iter()
+                .flatten()
+                .filter(|n| n.grouped_id() == Some(gid))
+                .map(|n| n.id())
+                .collect();
+            sibs.sort_unstable();
+            sibs.dedup();
+            if sibs.len() > 1 {
+                ids = sibs;
+                expanded = true;
             }
         }
     }
 
     let topic_id = as_i64(args.get("topic_id").unwrap_or(&Value::Null)).map(|t| t as i32);
-    if let Some(t) = topic_id {
-        if t <= 0 {
-            bail!("topic_id must be a positive integer");
-        }
+    if let Some(t) = topic_id
+        && t <= 0
+    {
+        bail!("topic_id must be a positive integer");
     }
     let send_as: Option<PeerRef> = match args.get("send_as") {
         Some(v) if !matches!(v, Value::Null) => Some(resolve_chat_value(client, v).await?),
@@ -858,7 +862,11 @@ async fn delete_chat_history(client: &Client, args: &Value) -> anyhow::Result<St
         })
         .await?;
     let tl::enums::messages::AffectedHistory::History(a) = res;
-    let scope = if revoke { "for both parties" } else { "for you" };
+    let scope = if revoke {
+        "for both parties"
+    } else {
+        "for you"
+    };
     Ok(format!(
         "Chat history cleared {scope}: {} messages deleted.",
         a.pts_count

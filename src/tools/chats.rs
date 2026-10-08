@@ -45,7 +45,9 @@ fn opt_bool(args: &Value, key: &str) -> Option<bool> {
 }
 
 fn opt_str<'a>(args: &'a Value, key: &str) -> Option<&'a str> {
-    args.get(key).and_then(|v| v.as_str()).filter(|s| !s.is_empty())
+    args.get(key)
+        .and_then(|v| v.as_str())
+        .filter(|s| !s.is_empty())
 }
 
 /// Invoke a raw TL request, converting failures into `anyhow` errors.
@@ -69,7 +71,8 @@ async fn resolve_peer(client: &Client, chat_id: &str) -> Result<Peer> {
         bail!("No chat found with id {id}. Use list_chats to find IDs.");
     }
     let username = chat_id.strip_prefix('@').unwrap_or(chat_id);
-    client.resolve_username(username)
+    client
+        .resolve_username(username)
         .await
         .map_err(|e| anyhow::anyhow!(e))?
         .with_context(|| format!("No user/chat found for @{username}"))
@@ -166,7 +169,7 @@ fn dialog_meta(dialog: &Dialog) -> (i32, bool, bool, bool) {
     };
     let muted = match &d.notify_settings {
         tl::enums::PeerNotifySettings::Settings(s) => {
-            s.mute_until.map_or(false, |t| t as i64 > now_unix())
+            s.mute_until.is_some_and(|t| t as i64 > now_unix())
         }
     };
     (d.unread_count, d.unread_mark, muted, d.folder_id == Some(1))
@@ -221,10 +224,11 @@ async fn h_subscribe_public_channel(client: &Client, args: &Value) -> Result<Str
         bail!("Can only subscribe to channels/supergroups, not this peer type.");
     }
     let name = peer_name(&peer);
-    let join_result = client.invoke(&tl::functions::channels::JoinChannel {
-        channel: pref.into(),
-    })
-    .await;
+    let join_result = client
+        .invoke(&tl::functions::channels::JoinChannel {
+            channel: pref.into(),
+        })
+        .await;
     match join_result {
         Ok(_) => Ok(format!("Subscribed to {name}.")),
         Err(InvocationError::Rpc(rpc)) if rpc.name == "USER_ALREADY_PARTICIPANT" => {
@@ -243,16 +247,17 @@ async fn h_list_topics(client: &Client, args: &Value) -> Result<String> {
     forum_channel(&peer)?;
     let pref = peer_ref(&peer, &chat_id).await?;
 
-    let result = client.invoke(&tl::functions::messages::GetForumTopics {
-        peer: pref.into(),
-        q: opt_str(args, "search_query").map(str::to_string),
-        offset_date: 0,
-        offset_id: 0,
-        offset_topic,
-        limit,
-    })
-    .await
-    .context("Failed to list forum topics")?;
+    let result = client
+        .invoke(&tl::functions::messages::GetForumTopics {
+            peer: pref.into(),
+            q: opt_str(args, "search_query").map(str::to_string),
+            offset_date: 0,
+            offset_id: 0,
+            offset_topic,
+            limit,
+        })
+        .await
+        .context("Failed to list forum topics")?;
 
     let tl::enums::messages::ForumTopics::Topics(t) = result;
 
@@ -306,13 +311,14 @@ async fn h_enable_forum_topics(client: &Client, args: &Value) -> Result<String> 
     let pref = peer_ref(&peer, &chat_id).await?;
     let name = peer_name(&peer);
 
-    client.invoke(&tl::functions::channels::ToggleForum {
-        channel: pref.into(),
-        enabled: true,
-        tabs,
-    })
-    .await
-    .context("Failed to enable forum topics")?;
+    client
+        .invoke(&tl::functions::channels::ToggleForum {
+            channel: pref.into(),
+            enabled: true,
+            tabs,
+        })
+        .await
+        .context("Failed to enable forum topics")?;
     Ok(format!("Forum topics enabled for {name}."))
 }
 
@@ -349,17 +355,18 @@ async fn h_create_forum_topic(client: &Client, args: &Value) -> Result<String> {
         .unwrap_or(0)
         & i64::MAX;
 
-    let updates = client.invoke(&tl::functions::messages::CreateForumTopic {
-        title_missing: false,
-        peer: pref.into(),
-        title: truncate(title, 128),
-        icon_color: opt_i32(args, "icon_color"),
-        icon_emoji_id: opt_i64(args, "icon_emoji_id"),
-        random_id,
-        send_as: None,
-    })
-    .await
-    .context("Failed to create forum topic")?;
+    let updates = client
+        .invoke(&tl::functions::messages::CreateForumTopic {
+            title_missing: false,
+            peer: pref.into(),
+            title: truncate(title, 128),
+            icon_color: opt_i32(args, "icon_color"),
+            icon_emoji_id: opt_i64(args, "icon_emoji_id"),
+            random_id,
+            send_as: None,
+        })
+        .await
+        .context("Failed to create forum topic")?;
 
     let mut rec = json!({
         "chat_id": bare_id(&peer),
@@ -387,16 +394,17 @@ async fn h_edit_forum_topic(client: &Client, args: &Value) -> Result<String> {
     forum_channel(&peer)?;
     let pref = peer_ref(&peer, &chat_id).await?;
 
-    client.invoke(&tl::functions::messages::EditForumTopic {
-        peer: pref.into(),
-        topic_id,
-        title: title.clone(),
-        icon_emoji_id,
-        closed,
-        hidden,
-    })
-    .await
-    .context("Failed to edit forum topic")?;
+    client
+        .invoke(&tl::functions::messages::EditForumTopic {
+            peer: pref.into(),
+            topic_id,
+            title: title.clone(),
+            icon_emoji_id,
+            closed,
+            hidden,
+        })
+        .await
+        .context("Failed to edit forum topic")?;
 
     let mut rec = json!({ "chat_id": bare_id(&peer), "topic_id": topic_id });
     if let Some(v) = title {
@@ -428,12 +436,13 @@ async fn h_delete_forum_topic(client: &Client, args: &Value) -> Result<String> {
     // the same request has to be sent again.
     let mut batches = 0;
     loop {
-        let res = client.invoke(&tl::functions::messages::DeleteTopicHistory {
-            peer: input_peer.clone(),
-            top_msg_id: topic_id,
-        })
-        .await
-        .context("Failed to delete forum topic")?;
+        let res = client
+            .invoke(&tl::functions::messages::DeleteTopicHistory {
+                peer: input_peer.clone(),
+                top_msg_id: topic_id,
+            })
+            .await
+            .context("Failed to delete forum topic")?;
         batches += 1;
         let tl::enums::messages::AffectedHistory::History(a) = res;
         if a.offset == 0 || batches >= MAX_BATCHES {
@@ -463,9 +472,7 @@ fn unpack_chat_full(res: tl::enums::messages::ChatFull) -> Result<(String, Optio
         tl::enums::ChatFull::ChannelFull(cf) => Ok((cf.about, cf.participants_count)),
         tl::enums::ChatFull::Full(gf) => {
             let count = match &gf.participants {
-                tl::enums::ChatParticipants::Participants(p) => {
-                    Some(p.participants.len() as i32)
-                }
+                tl::enums::ChatParticipants::Participants(p) => Some(p.participants.len() as i32),
                 tl::enums::ChatParticipants::Forbidden(_) => None,
             };
             Ok((gf.about, count))
@@ -611,7 +618,7 @@ async fn h_get_chat(client: &Client, args: &Value) -> Result<String> {
                 rec["last_message"] = json!({
                     "sender": sender,
                     "date": msg.date().format("%Y-%m-%d %H:%M").to_string(),
-                    "text": truncate(&msg.text(), 500),
+                    "text": truncate(msg.text(), 500),
                 });
             }
             break;
@@ -742,10 +749,12 @@ async fn set_archived(client: &Client, args: &Value, archived: bool) -> Result<S
     invoke(
         client,
         &tl::functions::folders::EditPeerFolders {
-            folder_peers: vec![tl::enums::InputFolderPeer::Peer(tl::types::InputFolderPeer {
-                peer: pref.into(),
-                folder_id: if archived { 1 } else { 0 },
-            })],
+            folder_peers: vec![tl::enums::InputFolderPeer::Peer(
+                tl::types::InputFolderPeer {
+                    peer: pref.into(),
+                    folder_id: if archived { 1 } else { 0 },
+                },
+            )],
         },
     )
     .await

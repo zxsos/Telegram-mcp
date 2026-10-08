@@ -62,8 +62,8 @@ pub fn unregister_mcp() -> Result<()> {
         Err(e) => bail!("Failed to read {}: {e}", path.display()),
     };
 
-    let mut root: Value =
-        serde_json::from_str(&contents).with_context(|| format!("Failed to parse {}", path.display()))?;
+    let mut root: Value = serde_json::from_str(&contents)
+        .with_context(|| format!("Failed to parse {}", path.display()))?;
 
     let removed = root
         .as_object_mut()
@@ -74,10 +74,17 @@ pub fn unregister_mcp() -> Result<()> {
 
     if removed {
         let output = serde_json::to_string_pretty(&root)?;
-        std::fs::write(&path, output).with_context(|| format!("Failed to write {}", path.display()))?;
-        eprintln!("Unregistered telegram-mcp MCP server from {}", path.display());
+        std::fs::write(&path, output)
+            .with_context(|| format!("Failed to write {}", path.display()))?;
+        eprintln!(
+            "Unregistered telegram-mcp MCP server from {}",
+            path.display()
+        );
     } else {
-        eprintln!("telegram-mcp not found in {}, nothing to remove", path.display());
+        eprintln!(
+            "telegram-mcp not found in {}, nothing to remove",
+            path.display()
+        );
     }
 
     Ok(())

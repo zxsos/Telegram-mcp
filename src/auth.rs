@@ -47,8 +47,12 @@ fn store_config(api_id: i32, api_hash: &str) -> Result<()> {
 
 fn load_config() -> Result<Config> {
     let path = config_path()?;
-    let json = std::fs::read_to_string(&path)
-        .with_context(|| format!("No config at {} — run `telegram-mcp --auth` first", path.display()))?;
+    let json = std::fs::read_to_string(&path).with_context(|| {
+        format!(
+            "No config at {} — run `telegram-mcp --auth` first",
+            path.display()
+        )
+    })?;
     serde_json::from_str(&json).context("Failed to parse config")
 }
 
@@ -172,7 +176,9 @@ pub async fn interactive_auth() -> Result<()> {
             bail!("Invalid login code. Please try again.");
         }
         Err(SignInError::SignUpRequired) => {
-            bail!("This phone number has no Telegram account. Sign up with an official client first.");
+            bail!(
+                "This phone number has no Telegram account. Sign up with an official client first."
+            );
         }
         Err(e) => bail!("Sign-in failed: {e}"),
     }
