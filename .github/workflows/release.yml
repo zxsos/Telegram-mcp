@@ -75,7 +75,7 @@ jobs:
         run: |
           gh release create ${{ github.ref_name }} \
             --generate-notes \
-            dist/telegram-mcp-linux-x86_64-bin#telegram-mcp-linux-x86_64 \
-            dist/telegram-mcp-linux-x86_64-musl-bin#telegram-mcp-linux-x86_64-musl \
-            dist/telegram-mcp-macos-arm64-bin#telegram-mcp-macos-arm64 \
-            "dist/telegram-mcp-windows-x86_64.exe-bin#telegram-mcp-windows-x86_64.exe"
+            dist/telegram-mcp-linux-x86_64-bin#telegram-mcp-linux \
+            dist/telegram-mcp-linux-x86_64-musl-bin#telegram-mcp-musl \
+            dist/telegram-mcp-macos-arm64-bin#telegram-mcp-macos \
+            "dist/telegram-mcp-windows-x86_64.exe-bin#telegram-mcp-windows.exe"
