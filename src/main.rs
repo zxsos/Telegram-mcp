@@ -1,4 +1,4 @@
-//! tg-mcp-monitor: Telegram MCP server entry point.
+//! telegram-mcp: Telegram MCP server entry point.
 //!
 //! Original from telegram-mcp (MIT, (c) 2026 septagram).
 //! Optimized: merged duplicated serve loops into one.
@@ -42,7 +42,7 @@ async fn serve() -> anyhow::Result<()> {
         )
         .init();
 
-    info!("Starting tg-mcp-monitor server");
+    info!("Starting telegram-mcp server");
 
     // Connect to Telegram (optional — server still lists tools without it).
     let client: Option<Client> = match auth::connect().await {
@@ -53,7 +53,7 @@ async fn serve() -> anyhow::Result<()> {
         Err(e) => {
             warn!("Failed to connect to Telegram: {e:#}");
             warn!("Tools will return errors until authentication is set up.");
-            warn!("Run `tg-mcp-monitor --auth` to authenticate.");
+            warn!("Run `telegram-mcp --auth` to authenticate.");
             None
         }
     };
@@ -103,7 +103,7 @@ async fn handle_request(
                     tools: ToolsCapability {},
                 },
                 server_info: ServerInfo {
-                    name: "tg-mcp-monitor".into(),
+                    name: "telegram-mcp".into(),
                     version: env!("CARGO_PKG_VERSION").into(),
                 },
             };
@@ -146,7 +146,7 @@ async fn handle_request(
                 return Some(JsonRpcResponse::success(
                     id,
                     serde_json::to_value(CallToolResult::err(
-                        "Error: Not connected to Telegram. Run `tg-mcp-monitor --auth` to authenticate, then restart the client.".into(),
+                        "Error: Not connected to Telegram. Run `telegram-mcp --auth` to authenticate, then restart the client.".into(),
                     ))
                     .unwrap(),
                 ));

@@ -11,12 +11,12 @@ use grammers_mtsender::SenderPool;
 use grammers_session::storages::SqliteSession;
 use serde::{Deserialize, Serialize};
 
-/// Where all tg-mcp-monitor data lives.
+/// Where all telegram-mcp data lives.
 fn data_dir() -> Result<PathBuf> {
     let home = std::env::var("USERPROFILE")
         .or_else(|_| std::env::var("HOME"))
         .context("Neither USERPROFILE nor HOME is set")?;
-    let dir = PathBuf::from(home).join(".tg-mcp-monitor");
+    let dir = PathBuf::from(home).join(".telegram-mcp");
     std::fs::create_dir_all(&dir).with_context(|| format!("Failed to create {}", dir.display()))?;
     Ok(dir)
 }
@@ -48,7 +48,7 @@ fn store_config(api_id: i32, api_hash: &str) -> Result<()> {
 fn load_config() -> Result<Config> {
     let path = config_path()?;
     let json = std::fs::read_to_string(&path)
-        .with_context(|| format!("No config at {} — run `tg-mcp-monitor --auth` first", path.display()))?;
+        .with_context(|| format!("No config at {} — run `telegram-mcp --auth` first", path.display()))?;
     serde_json::from_str(&json).context("Failed to parse config")
 }
 
@@ -59,7 +59,7 @@ pub async fn connect() -> Result<(Client, tokio::task::JoinHandle<()>)> {
 
     if !path.exists() {
         bail!(
-            "No session file at {} — run `tg-mcp-monitor --auth` first",
+            "No session file at {} — run `telegram-mcp --auth` first",
             path.display()
         );
     }
@@ -79,7 +79,7 @@ pub async fn connect() -> Result<(Client, tokio::task::JoinHandle<()>)> {
     let pool_task = tokio::spawn(async move { runner.run().await });
 
     if !client.is_authorized().await? {
-        bail!("Session exists but is not authorized — run `tg-mcp-monitor --auth` again");
+        bail!("Session exists but is not authorized — run `telegram-mcp --auth` again");
     }
 
     Ok((client, pool_task))
@@ -87,7 +87,7 @@ pub async fn connect() -> Result<(Client, tokio::task::JoinHandle<()>)> {
 
 /// Interactive authentication flow.
 pub async fn interactive_auth() -> Result<()> {
-    eprintln!("=== tg-mcp-monitor Authentication ===");
+    eprintln!("=== telegram-mcp Authentication ===");
     eprintln!();
     eprintln!("You need a Telegram API ID and API Hash.");
     eprintln!("Get them at: https://my.telegram.org");
@@ -178,7 +178,7 @@ pub async fn interactive_auth() -> Result<()> {
     }
 
     eprintln!("Session saved to {}", path.display());
-    eprintln!("You can now use tg-mcp-monitor as an MCP server.");
+    eprintln!("You can now use telegram-mcp as an MCP server.");
 
     handle.quit();
     Ok(())

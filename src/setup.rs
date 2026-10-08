@@ -16,7 +16,7 @@ fn claude_json_path() -> Result<PathBuf> {
 fn mcp_entry() -> Value {
     serde_json::json!({
         "type": "stdio",
-        "command": "tg-mcp-monitor",
+        "command": "telegram-mcp",
         "args": []
     })
 }
@@ -41,12 +41,12 @@ pub fn register_mcp() -> Result<()> {
         .as_object_mut()
         .context("mcpServers is not an object")?;
 
-    servers.insert("tg-mcp-monitor".into(), mcp_entry());
+    servers.insert("telegram-mcp".into(), mcp_entry());
 
     let output = serde_json::to_string_pretty(&root)?;
     std::fs::write(&path, output).with_context(|| format!("Failed to write {}", path.display()))?;
 
-    eprintln!("Registered tg-mcp-monitor MCP server in {}", path.display());
+    eprintln!("Registered telegram-mcp MCP server in {}", path.display());
     Ok(())
 }
 
@@ -69,15 +69,15 @@ pub fn unregister_mcp() -> Result<()> {
         .as_object_mut()
         .and_then(|obj| obj.get_mut("mcpServers"))
         .and_then(|servers| servers.as_object_mut())
-        .and_then(|servers| servers.remove("tg-mcp-monitor"))
+        .and_then(|servers| servers.remove("telegram-mcp"))
         .is_some();
 
     if removed {
         let output = serde_json::to_string_pretty(&root)?;
         std::fs::write(&path, output).with_context(|| format!("Failed to write {}", path.display()))?;
-        eprintln!("Unregistered tg-mcp-monitor MCP server from {}", path.display());
+        eprintln!("Unregistered telegram-mcp MCP server from {}", path.display());
     } else {
-        eprintln!("tg-mcp-monitor not found in {}, nothing to remove", path.display());
+        eprintln!("telegram-mcp not found in {}, nothing to remove", path.display());
     }
 
     Ok(())

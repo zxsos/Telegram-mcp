@@ -1344,7 +1344,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "tg-mcp-monitor"
+name = "telegram-mcp"
 version = "1.0.0"
 dependencies = [
  "anyhow",

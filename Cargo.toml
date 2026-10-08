@@ -1,8 +1,8 @@
 [package]
-name = "tg-mcp-monitor"
+name = "telegram-mcp"
 version = "1.0.0"
 edition = "2024"
-description = "Telegram MCP server for monitoring chats (forked from telegram-mcp, MIT)"
+description = "Lightweight Telegram MCP server"
 license = "MIT"
 
 [dependencies]
