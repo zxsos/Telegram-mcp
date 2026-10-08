@@ -1,5 +1,7 @@
 # Telegram MCP
 
+<img src="assets/icon.png" width="128" alt="Telegram MCP Icon">
+
 [English](README.md)
 
 轻量 Telegram MCP 服务器（Rust），用你的 Telegram 账号登录，可读你加入的所有群/频道（含私密群）。

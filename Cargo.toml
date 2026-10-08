@@ -3,7 +3,7 @@ name = "telegram-mcp"
 version = "1.0.0"
 edition = "2024"
 description = "Lightweight Telegram MCP server"
-license = "MIT"
+license = "Apache-2.0"
 
 [dependencies]
 anyhow = "1.0"
