@@ -258,17 +258,17 @@ cargo build --release
 # 4. 接入 MCP 客户端
 ```
 
-Claude Code：
+Claude Code（命令行）：
 ```bash
-claude mcp add telegram -- ./target/release/telegram-mcp
+claude mcp add --transport stdio telegram -- /absolute/path/to/telegram-mcp
 ```
 
-其他客户端（Cursor、Windsurf、Claude Desktop 等）——加到 MCP 配置 JSON：
+**Claude Desktop / Cursor / Windsurf / Cline** —— 加到配置文件 JSON：
 ```json
 {
   "mcpServers": {
     "telegram": {
-      "command": "/path/to/telegram-mcp",
+      "command": "/absolute/path/to/telegram-mcp",
       "env": {
         "TG_API_ID": "your_api_id",
         "TG_API_HASH": "your_api_hash"
@@ -277,6 +277,47 @@ claude mcp add telegram -- ./target/release/telegram-mcp
   }
 }
 ```
+配置文件位置：
+- Claude Desktop（macOS）：`~/Library/Application Support/Claude/claude_desktop_config.json`
+- Claude Desktop（Windows）：`%APPDATA%\Claude\claude_desktop_config.json`
+- Cursor：`~/.cursor/mcp.json`（全局）或 `.cursor/mcp.json`（项目内）
+- Windsurf：`~/.codeium/windsurf/mcp_config.json`
+
+**VS Code**（`.vscode/mcp.json`）——注意格式不同：
+```json
+{
+  "servers": {
+    "telegram": {
+      "type": "stdio",
+      "command": "/absolute/path/to/telegram-mcp",
+      "env": {
+        "TG_API_ID": "your_api_id",
+        "TG_API_HASH": "your_api_hash"
+      }
+    }
+  }
+}
+```
+
+**Zed**（`~/.config/zed/settings.json`）：
+```json
+{
+  "context_servers": {
+    "telegram": {
+      "command": {
+        "path": "/absolute/path/to/telegram-mcp",
+        "args": []
+      },
+      "env": {
+        "TG_API_ID": "your_api_id",
+        "TG_API_HASH": "your_api_hash"
+      }
+    }
+  }
+}
+```
+
+> 提示：`command` 请写二进制文件的绝对路径（例如 `/home/user/telegram-mcp/target/release/telegram-mcp`）。图形界面客户端可能读不到你 shell 的 PATH。
 
 ### 使用示例
 

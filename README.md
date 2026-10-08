@@ -256,19 +256,18 @@ cargo build --release
 # TG_PROXY=socks5://user:pass@host:port ./target/release/telegram-mcp --auth
 
 # 4. Add to MCP client
-```
 
-Claude Code:
+**Claude Code** (CLI):
 ```bash
-claude mcp add telegram -- ./target/release/telegram-mcp
+claude mcp add --transport stdio telegram -- /absolute/path/to/telegram-mcp
 ```
 
-Other clients (Cursor, Windsurf, Claude Desktop, etc.) — add to your MCP config JSON:
+**Claude Desktop / Cursor / Windsurf / Cline** — add to config JSON:
 ```json
 {
   "mcpServers": {
     "telegram": {
-      "command": "/path/to/telegram-mcp",
+      "command": "/absolute/path/to/telegram-mcp",
       "env": {
         "TG_API_ID": "your_api_id",
         "TG_API_HASH": "your_api_hash"
@@ -277,6 +276,47 @@ Other clients (Cursor, Windsurf, Claude Desktop, etc.) — add to your MCP confi
   }
 }
 ```
+Config file locations:
+- Claude Desktop (macOS): `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Claude Desktop (Windows): `%APPDATA%\Claude\claude_desktop_config.json`
+- Cursor: `~/.cursor/mcp.json` (global) or `.cursor/mcp.json` (project)
+- Windsurf: `~/.codeium/windsurf/mcp_config.json`
+
+**VS Code** (`.vscode/mcp.json`) — note the different format:
+```json
+{
+  "servers": {
+    "telegram": {
+      "type": "stdio",
+      "command": "/absolute/path/to/telegram-mcp",
+      "env": {
+        "TG_API_ID": "your_api_id",
+        "TG_API_HASH": "your_api_hash"
+      }
+    }
+  }
+}
+```
+
+**Zed** (`~/.config/zed/settings.json`):
+```json
+{
+  "context_servers": {
+    "telegram": {
+      "command": {
+        "path": "/absolute/path/to/telegram-mcp",
+        "args": []
+      },
+      "env": {
+        "TG_API_ID": "your_api_id",
+        "TG_API_HASH": "your_api_hash"
+      }
+    }
+  }
+}
+```
+
+> Tip: Use the absolute path to the binary (e.g. `/home/user/telegram-mcp/target/release/telegram-mcp`). GUI clients may not inherit your shell's PATH.
 
 ### Usage Examples
 
