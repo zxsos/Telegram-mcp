@@ -3,6 +3,7 @@ name: Release
 on:
   push:
     tags: ["v*"]
+    branches: ["master"]
   workflow_dispatch:
     inputs:
       tag:
@@ -79,8 +80,22 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create ${{ github.ref_name }} \
+          TAG="${{ github.ref_name }}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ inputs.tag }}"
+          elif [ "${{ github.ref_type }}" = "branch" ]; then
+            TAG="nightly"
+          fi
+          # Delete existing release with same tag if present (idempotent)
+          gh release delete "$TAG" --yes 2>/dev/null || true
+          git push origin ":refs/tags/$TAG" 2>/dev/null || true
+          # Create/update the tag to point at this commit
+          git tag -f "$TAG" "${{ github.sha }}"
+          git push origin "$TAG" --force
+          gh release create "$TAG" \
+            --prerelease \
             --generate-notes \
+            --title "Nightly build ($TAG)" \
             dist/telegram-mcp-linux-x86_64-bin#telegram-mcp-linux \
             dist/telegram-mcp-linux-x86_64-musl-bin#telegram-mcp-musl \
             dist/telegram-mcp-macos-arm64-bin#telegram-mcp-macos \
