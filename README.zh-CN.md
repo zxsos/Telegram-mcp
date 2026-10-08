@@ -47,7 +47,7 @@ export TG_2FA_PASSWORD='...'     # 如开了 2FA
 ./target/release/telegram-mcp --auth
 
 # 在 HTTP 代理后（自动用 $http_proxy）
-./target/release/telegram-mcp-proxy --auth
+./scripts/telegram-mcp-proxy --auth
 
 # 4. 接入 MCP 客户端
 ```

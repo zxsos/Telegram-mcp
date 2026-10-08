@@ -47,7 +47,7 @@ export TG_2FA_PASSWORD='...'     # If 2FA enabled
 ./target/release/telegram-mcp --auth
 
 # Behind HTTP proxy (auto-uses $http_proxy)
-./target/release/telegram-mcp-proxy --auth
+./scripts/telegram-mcp-proxy --auth
 
 # 4. Add to MCP client
 ```
