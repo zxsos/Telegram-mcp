@@ -13,34 +13,22 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Linux x86_64 (glibc)
+          # Linux x86_64 (glibc, mainstream)
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             name: telegram-mcp-linux-x86_64
-          # Linux x86_64 (musl static, for Alpine)
+          # Linux x86_64 (musl static, for Alpine/Docker)
           - os: ubuntu-latest
             target: x86_64-unknown-linux-musl
             name: telegram-mcp-linux-x86_64-musl
-          # Linux aarch64 (ARM64 servers)
-          - os: ubuntu-24.04-arm
-            target: aarch64-unknown-linux-gnu
-            name: telegram-mcp-linux-aarch64
           # macOS ARM64 (M1/M2/M3)
           - os: macos-latest
             target: aarch64-apple-darwin
             name: telegram-mcp-macos-arm64
-          # macOS x86_64 (Intel)
-          - os: macos-15-intel
-            target: x86_64-apple-darwin
-            name: telegram-mcp-macos-x86_64
           # Windows x86_64
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             name: telegram-mcp-windows-x86_64.exe
-          # Windows ARM64
-          - os: windows-11-arm
-            target: aarch64-pc-windows-msvc
-            name: telegram-mcp-windows-arm64.exe
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -89,8 +77,5 @@ jobs:
             --generate-notes \
             dist/telegram-mcp-linux-x86_64-bin#telegram-mcp-linux-x86_64 \
             dist/telegram-mcp-linux-x86_64-musl-bin#telegram-mcp-linux-x86_64-musl \
-            dist/telegram-mcp-linux-aarch64-bin#telegram-mcp-linux-aarch64 \
             dist/telegram-mcp-macos-arm64-bin#telegram-mcp-macos-arm64 \
-            dist/telegram-mcp-macos-x86_64-bin#telegram-mcp-macos-x86_64 \
-            "dist/telegram-mcp-windows-x86_64.exe-bin#telegram-mcp-windows-x86_64.exe" \
-            "dist/telegram-mcp-windows-arm64.exe-bin#telegram-mcp-windows-arm64.exe"
+            "dist/telegram-mcp-windows-x86_64.exe-bin#telegram-mcp-windows-x86_64.exe"
