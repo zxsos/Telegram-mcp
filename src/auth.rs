@@ -57,7 +57,31 @@ fn load_config() -> Result<Config> {
 }
 
 /// Connect to Telegram using a saved session.
+/// Get SOCKS5 proxy URL from --proxy flag or TG_PROXY env var.
+/// Returns None if not configured (direct connection).
+fn get_proxy_url() -> Option<String> {
+    // Check CLI args for --proxy <url>
+    let args: Vec<String> = std::env::args().collect();
+    for i in 0..args.len() {
+        if args[i] == "--proxy" && i + 1 < args.len() {
+            return Some(args[i + 1].clone());
+        }
+        if let Some(url) = args[i].strip_prefix("--proxy=") {
+            return Some(url.to_string());
+        }
+    }
+    // Fallback to env var
+    std::env::var("TG_PROXY").ok().filter(|s| !s.is_empty())
+}
+
 pub async fn connect() -> Result<(Client, tokio::task::JoinHandle<()>)> {
+    connect_with_proxy(get_proxy_url()).await
+}
+
+/// Connect with optional SOCKS5 proxy URL.
+pub async fn connect_with_proxy(
+    proxy_url: Option<String>,
+) -> Result<(Client, tokio::task::JoinHandle<()>)> {
     let config = load_config()?;
     let path = session_path()?;
 
@@ -77,7 +101,16 @@ pub async fn connect() -> Result<(Client, tokio::task::JoinHandle<()>)> {
         runner,
         updates: _updates,
         handle,
-    } = SenderPool::new(Arc::clone(&session), config.api_id);
+    } = if let Some(proxy) = proxy_url {
+        use grammers_mtsender::{ConnectionParams, SenderPool};
+        let params = ConnectionParams {
+            proxy_url: Some(proxy),
+            ..Default::default()
+        };
+        SenderPool::with_configuration(Arc::clone(&session), config.api_id, params)
+    } else {
+        SenderPool::new(Arc::clone(&session), config.api_id)
+    };
 
     let client = Client::new(handle);
     let pool_task = tokio::spawn(async move { runner.run().await });
@@ -125,7 +158,16 @@ pub async fn interactive_auth() -> Result<()> {
         runner,
         updates: _updates,
         handle,
-    } = SenderPool::new(Arc::clone(&session), api_id);
+    } = if let Some(proxy) = get_proxy_url() {
+        use grammers_mtsender::ConnectionParams;
+        let params = ConnectionParams {
+            proxy_url: Some(proxy),
+            ..Default::default()
+        };
+        SenderPool::with_configuration(Arc::clone(&session), api_id, params)
+    } else {
+        SenderPool::new(Arc::clone(&session), api_id)
+    };
 
     let client = Client::new(handle.clone());
     let _pool_task = tokio::spawn(async move { runner.run().await });

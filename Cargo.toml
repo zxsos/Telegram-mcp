@@ -9,7 +9,7 @@ license = "Apache-2.0"
 anyhow = "1.0"
 # grammers 0.10.0 via git (crates.io 0.10.0 has glass_pumpkin API mismatch bug)
 grammers-client = { git = "https://github.com/lonami/grammers", rev = "fa7692e" }
-grammers-mtsender = { git = "https://github.com/lonami/grammers", rev = "fa7692e" }
+grammers-mtsender = { git = "https://github.com/lonami/grammers", rev = "fa7692e", features = ["proxy"] }
 grammers-session = { git = "https://github.com/lonami/grammers", rev = "fa7692e" }
 grammers-tl-types = { git = "https://github.com/lonami/grammers", rev = "fa7692e" }
 rpassword = "7"
