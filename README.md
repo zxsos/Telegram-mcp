@@ -2,7 +2,7 @@
 
 轻量 Telegram MCP 服务器（Rust），用你的 Telegram 账号登录，可读你加入的所有群/频道（含私密群）。
 
-## 工具（101）
+## 工具（126）
 
 ### 基础
 | 工具 | 说明 |
@@ -135,6 +135,35 @@
 | `get_user_status` | 用户在线状态 |
 
 *更多模块（群组）正在添加中。*
+
+### 群组管理
+| 工具 | 说明 |
+|------|------|
+| `create_group` | 创建群组 |
+| `create_channel` | 创建频道 |
+| `invite_to_group` | 邀请用户进群 |
+| `leave_chat` | 退出群聊 |
+| `get_participants` | 查看成员列表 |
+| `promote_admin` | 设为管理员 |
+| `demote_admin` | 取消管理员 |
+| `edit_admin_rights` | 编辑管理员权限 |
+| `get_admins` | 管理员列表 |
+| `get_member_admin_status` | 成员管理状态 |
+| `ban_user` | 封禁用户 |
+| `unban_user` | 解封用户 |
+| `remove_user` | 移出用户 |
+| `get_banned_users` | 封禁列表 |
+| `edit_chat_title` | 改群名 |
+| `edit_chat_about` | 改群简介 |
+| `edit_chat_photo` | 改群头像 |
+| `delete_chat_photo` | 删除群头像 |
+| `set_default_chat_permissions` | 默认权限 |
+| `toggle_slow_mode` | 慢速模式 |
+| `get_invite_link` | 获取邀请链接 |
+| `export_chat_invite` | 导出邀请 |
+| `import_chat_invite` | 导入邀请 |
+| `join_chat_by_link` | 通过链接加群 |
+| `get_recent_actions` | 管理日志 |
 
 ## 快速开始
 
