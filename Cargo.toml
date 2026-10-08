@@ -25,3 +25,6 @@ opt-level = "z"
 lto = true
 codegen-units = 1
 strip = true
+
+[target.'cfg(target_os = "windows")'.build-dependencies]
+winres = "0.1"
