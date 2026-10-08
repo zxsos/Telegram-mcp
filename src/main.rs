@@ -124,7 +124,7 @@ async fn handle_request(
         // ── Tools ──────────────────────────────────────────────────
         "tools/list" => {
             let result = ToolsListResult {
-                tools: tools::tool_definitions(),
+                tools: tools::all_tool_definitions(),
             };
             Some(JsonRpcResponse::success(
                 id,
@@ -155,7 +155,7 @@ async fn handle_request(
                 ));
             };
 
-            match tools::handle_tool_call(client, tool_name, &arguments).await {
+            match tools::dispatch_tool_call(client, tool_name, &arguments).await {
                 Ok(result) => Some(JsonRpcResponse::success(
                     id,
                     serde_json::to_value(result).unwrap(),
