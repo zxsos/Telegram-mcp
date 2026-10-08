@@ -238,6 +238,11 @@
 
 ## 快速开始
 
+> 🤖 **让 AI 帮你装**：复制下面这句发给你的 AI 助手：
+> ```
+> 阅读 https://github.com/zxsos/Telegram-mcp/blob/master/AGENT.md，帮我安装 Telegram MCP。
+> ```
+
 ```bash
 # 1. 去 https://my.telegram.org/apps 拿 API 凭证
 # 2. 编译

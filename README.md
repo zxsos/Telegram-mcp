@@ -238,6 +238,11 @@ Lightweight Telegram MCP server in Rust. Sign in with your Telegram account to r
 
 ## Quick Start
 
+> 🤖 **Let your AI do it**: Copy-paste to your AI assistant:
+> ```
+> Read https://github.com/zxsos/Telegram-mcp/blob/master/AGENT.md and install Telegram MCP for me.
+> ```
+
 ```bash
 # 1. Get Telegram API credentials from https://my.telegram.org/apps
 # 2. Build
