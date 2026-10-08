@@ -263,6 +263,31 @@ Claude Code：
 claude mcp add telegram -- ./target/release/telegram-mcp
 ```
 
+其他客户端（Cursor、Windsurf、Claude Desktop 等）——加到 MCP 配置 JSON：
+```json
+{
+  "mcpServers": {
+    "telegram": {
+      "command": "/path/to/telegram-mcp",
+      "env": {
+        "TG_API_ID": "your_api_id",
+        "TG_API_HASH": "your_api_hash"
+      }
+    }
+  }
+}
+```
+
+### 使用示例
+
+连接成功后，直接跟 AI 对话：
+
+- "列出我最近的聊天"
+- "看看过去一小时的未读消息"
+- "给 @username 发个 '你好'"
+- "在我的群里搜索关于'开会'的消息"
+- "下载收藏夹里最新的照片"
+
 ## License
 
 Apache-2.0

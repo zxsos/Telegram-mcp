@@ -263,6 +263,31 @@ Claude Code:
 claude mcp add telegram -- ./target/release/telegram-mcp
 ```
 
+Other clients (Cursor, Windsurf, Claude Desktop, etc.) — add to your MCP config JSON:
+```json
+{
+  "mcpServers": {
+    "telegram": {
+      "command": "/path/to/telegram-mcp",
+      "env": {
+        "TG_API_ID": "your_api_id",
+        "TG_API_HASH": "your_api_hash"
+      }
+    }
+  }
+}
+```
+
+### Usage Examples
+
+Once connected, just talk to your AI assistant naturally:
+
+- "List my recent chats"
+- "Show me unread messages from the last hour"
+- "Send 'hello' to @username"
+- "Search for messages about 'meeting' in my groups"
+- "Download the latest photo from my Saved Messages"
+
 ## License
 
 Apache-2.0
