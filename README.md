@@ -2,7 +2,7 @@
 
 轻量 Telegram MCP 服务器（Rust），用你的 Telegram 账号登录，可读你加入的所有群/频道（含私密群）。
 
-## 工具（71）
+## 工具（90）
 
 ### 基础
 | 工具 | 说明 |
@@ -98,6 +98,26 @@
 | `delete_chat_history` | 清空聊天记录 |
 | `delete_messages_bulk` | 批量删除消息 |
 | `pin_message` | 置顶消息 |
+
+### 对话
+| 工具 | 说明 |
+|------|------|
+| `get_chats` | 分页列出对话 |
+| `get_chat` | 查看对话详情 |
+| `get_full_chat` | 完整对话信息 |
+| `search_public_chats` | 搜索公开群/频道 |
+| `resolve_username` | 解析用户名 |
+| `subscribe_public_channel` | 订阅公开频道 |
+| `mute_chat` / `unmute_chat` | 静音/取消静音 |
+| `archive_chat` / `unarchive_chat` | 归档/取消归档 |
+| `list_topics` | 列出话题（论坛群） |
+| `create_forum_topic` | 创建话题 |
+| `edit_forum_topic` | 编辑话题 |
+| `delete_forum_topic` | 删除话题 |
+| `enable_forum_topics` | 启用话题功能 |
+| `get_common_chats` | 共同群聊 |
+| `get_message_read_by` | 消息已读情况 |
+| `get_message_link` | 获取消息链接 |
 
 *更多模块（群组等）正在添加中。*
 
