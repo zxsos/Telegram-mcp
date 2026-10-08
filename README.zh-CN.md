@@ -250,8 +250,10 @@ cargo build --release
 # - 非交互：设置 TG_CODE 环境变量，或把验证码写到 /tmp/telegram_mcp_code
 # - 2FA：如开了两步验证，设置 TG_2FA_PASSWORD 环境变量
 
-# 在 HTTP 代理后（自动用 $http_proxy）
-./scripts/telegram-mcp-proxy --auth
+# 使用 SOCKS5 代理（可选）
+./target/release/telegram-mcp --proxy socks5://user:pass@host:port --auth
+# 或设置 TG_PROXY 环境变量：
+# TG_PROXY=socks5://user:pass@host:port ./target/release/telegram-mcp --auth
 
 # 4. 接入 MCP 客户端
 ```

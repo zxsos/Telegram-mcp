@@ -250,8 +250,10 @@ cargo build --release
 # - Non-interactive: set TG_CODE env var, or write code to /tmp/telegram_mcp_code
 # - 2FA: set TG_2FA_PASSWORD env var if enabled
 
-# Behind HTTP proxy (auto-uses $http_proxy)
-./scripts/telegram-mcp-proxy --auth
+# Behind SOCKS5 proxy (optional)
+./target/release/telegram-mcp --proxy socks5://user:pass@host:port --auth
+# Or set TG_PROXY env var:
+# TG_PROXY=socks5://user:pass@host:port ./target/release/telegram-mcp --auth
 
 # 4. Add to MCP client
 ```
