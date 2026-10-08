@@ -38,6 +38,17 @@ cargo build --release
 # 3. Login (one time, needs phone verification code)
 ./target/release/telegram-mcp --auth
 
+# Non-interactive login (for scripts/CI)
+export TG_API_ID='12345'
+export TG_API_HASH='abcdef...'
+export TG_PHONE='+1234567890'
+export TG_CODE='123456'          # Code from Telegram
+export TG_2FA_PASSWORD='...'     # If 2FA enabled
+./target/release/telegram-mcp --auth
+
+# Behind HTTP proxy (auto-uses $http_proxy)
+./target/release/telegram-mcp-proxy --auth
+
 # 4. Add to MCP client
 ```
 

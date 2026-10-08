@@ -38,6 +38,17 @@ cargo build --release
 # 3. 登录（只需一次，需手机验证码）
 ./target/release/telegram-mcp --auth
 
+# 非交互登录（脚本/CI 用）
+export TG_API_ID='12345'
+export TG_API_HASH='abcdef...'
+export TG_PHONE='+1234567890'
+export TG_CODE='123456'          # Telegram 验证码
+export TG_2FA_PASSWORD='...'     # 如开了 2FA
+./target/release/telegram-mcp --auth
+
+# 在 HTTP 代理后（自动用 $http_proxy）
+./target/release/telegram-mcp-proxy --auth
+
 # 4. 接入 MCP 客户端
 ```
 
