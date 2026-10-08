@@ -2,7 +2,7 @@
 
 轻量 Telegram MCP 服务器（Rust），用你的 Telegram 账号登录，可读你加入的所有群/频道（含私密群）。
 
-## 工具（90）
+## 工具（101）
 
 ### 基础
 | 工具 | 说明 |
@@ -119,7 +119,22 @@
 | `get_message_read_by` | 消息已读情况 |
 | `get_message_link` | 获取消息链接 |
 
-*更多模块（群组等）正在添加中。*
+### 个人资料
+| 工具 | 说明 |
+|------|------|
+| `get_me` | 查看当前账号信息 |
+| `update_profile` | 更新个人资料 |
+| `set_profile_photo` | 设置头像 |
+| `delete_profile_photo` | 删除头像 |
+| `get_privacy_settings` | 查看隐私设置 |
+| `set_privacy_settings` | 设置隐私 |
+| `get_full_user` | 完整用户信息 |
+| `get_bot_info` | Bot 信息 |
+| `set_bot_commands` | 设置 Bot 命令 |
+| `get_user_photos` | 用户照片 |
+| `get_user_status` | 用户在线状态 |
+
+*更多模块（群组）正在添加中。*
 
 ## 快速开始
 
