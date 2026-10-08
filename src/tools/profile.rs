@@ -286,14 +286,6 @@ async fn full_user_request(client: &Client, user: &str) -> Result<tl::types::use
     }
 }
 
-/// Raw `tl::types::User` from the first entry of a `users.UserFull` response.
-fn first_raw_user(uf: &tl::types::users::UserFull) -> Option<&tl::types::User> {
-    uf.users.iter().find_map(|u| match u {
-        tl::enums::User::User(t) => Some(t),
-        _ => None,
-    })
-}
-
 fn format_status(status: &tl::enums::UserStatus) -> String {
     match status {
         tl::enums::UserStatus::Empty => "hidden".into(),
@@ -467,8 +459,14 @@ async fn set_privacy_settings(client: &Client, args: &Value) -> Result<String> {
 
 async fn get_full_user(client: &Client, args: &Value) -> Result<String> {
     let uf = full_user_request(client, &user_arg(args, "user")).await?;
-    let user = first_raw_user(&uf);
-    let tl::enums::UserFull::Full(fu) = uf.full_user;
+    let tl::types::users::UserFull {
+        users, full_user, ..
+    } = uf;
+    let tl::enums::UserFull::Full(fu) = full_user;
+    let user = users.iter().find_map(|u| match u {
+        tl::enums::User::User(t) => Some(t),
+        _ => None,
+    });
 
     let usernames: Vec<&str> = user
         .and_then(|u| u.usernames.as_ref())
@@ -511,7 +509,7 @@ async fn get_full_user(client: &Client, args: &Value) -> Result<String> {
         if let Some(tl::enums::BusinessLocation::Location(loc)) = &fu.business_location {
             b.insert("location".into(), json!(loc.address));
         }
-        if let Some(tl::enums::BusinessWorkHours::WorkHours(wh)) = &fu.business_work_hours {
+        if let Some(tl::enums::BusinessWorkHours::Hours(wh)) = &fu.business_work_hours {
             b.insert("timezone".into(), json!(wh.timezone_id));
             b.insert("open_now".into(), json!(wh.open_now));
         }
@@ -559,8 +557,17 @@ async fn get_full_user(client: &Client, args: &Value) -> Result<String> {
 
 async fn get_bot_info(client: &Client, args: &Value) -> Result<String> {
     let uf = full_user_request(client, &user_arg(args, "bot_username")).await?;
-    let user = first_raw_user(&uf).context("bot not found")?;
-    let tl::enums::UserFull::Full(fu) = uf.full_user;
+    let tl::types::users::UserFull {
+        users, full_user, ..
+    } = uf;
+    let tl::enums::UserFull::Full(fu) = full_user;
+    let user = users
+        .iter()
+        .find_map(|u| match u {
+            tl::enums::User::User(t) => Some(t),
+            _ => None,
+        })
+        .context("bot not found")?;
     Ok(serde_json::to_string_pretty(&json!({
         "bot_info": {
             "id": user.id,
