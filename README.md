@@ -158,14 +158,10 @@ cargo build --release
 
 # 3. Login (one time, needs phone verification code)
 ./target/release/telegram-mcp --auth
-
-# Non-interactive login (for scripts/CI)
-export TG_API_ID='12345'
-export TG_API_HASH='abcdef...'
-export TG_PHONE='+1234567890'
-export TG_CODE='123456'          # Code from Telegram
-export TG_2FA_PASSWORD='...'     # If 2FA enabled
-./target/release/telegram-mcp --auth
+# Code will be sent to your phone/Telegram app.
+# - Interactive: type the code when prompted
+# - Non-interactive: set TG_CODE env var, or write code to /tmp/telegram_mcp_code
+# - 2FA: set TG_2FA_PASSWORD env var if enabled
 
 # Behind HTTP proxy (auto-uses $http_proxy)
 ./scripts/telegram-mcp-proxy --auth
@@ -176,14 +172,6 @@ export TG_2FA_PASSWORD='...'     # If 2FA enabled
 Claude Code:
 ```bash
 claude mcp add telegram -- ./target/release/telegram-mcp
-```
-
-## Monitor Group Messages
-
-```
-1. Call list_chats to find the target group's numeric ID
-2. Poll get_messages(chat_id="xxx", limit=20) for new messages
-3. Filter by keywords
 ```
 
 ## License

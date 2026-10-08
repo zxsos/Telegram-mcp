@@ -158,14 +158,10 @@ cargo build --release
 
 # 3. 登录（只需一次，需手机验证码）
 ./target/release/telegram-mcp --auth
-
-# 非交互登录（脚本/CI 用）
-export TG_API_ID='12345'
-export TG_API_HASH='abcdef...'
-export TG_PHONE='+1234567890'
-export TG_CODE='123456'          # Telegram 验证码
-export TG_2FA_PASSWORD='...'     # 如开了 2FA
-./target/release/telegram-mcp --auth
+# 验证码会发到你手机/Telegram App。
+# - 交互式：按提示输入验证码
+# - 非交互：设置 TG_CODE 环境变量，或把验证码写到 /tmp/telegram_mcp_code
+# - 2FA：如开了两步验证，设置 TG_2FA_PASSWORD 环境变量
 
 # 在 HTTP 代理后（自动用 $http_proxy）
 ./scripts/telegram-mcp-proxy --auth
@@ -176,14 +172,6 @@ export TG_2FA_PASSWORD='...'     # 如开了 2FA
 Claude Code：
 ```bash
 claude mcp add telegram -- ./target/release/telegram-mcp
-```
-
-## 监控群新消息
-
-```
-1. 调 list_chats 找到目标群的数字 ID
-2. 定时调 get_messages(chat_id="xxx", limit=20) 拉新消息
-3. 按关键词过滤
 ```
 
 ## License

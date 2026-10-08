@@ -157,15 +157,36 @@ pub async fn interactive_auth() -> Result<()> {
         Err(e) => return Err(e).context("Failed to request login code"),
     };
 
-    let code = std::env::var("TG_CODE").unwrap_or_else(|_| {
+    // Get code: env var > prompt > wait for file
+    let code = if let Ok(c) = std::env::var("TG_CODE") {
+        c
+    } else {
         match rpassword::prompt_password("Login code (check your Telegram app): ") {
             Ok(c) => c,
             Err(_) => {
-                eprintln!("\nCode sent! Re-run with TG_CODE env var to complete login.");
-                std::process::exit(0);
+                // No TTY: wait for code via file
+                let code_file = "/tmp/telegram_mcp_code";
+                eprintln!(
+                    "\nCode sent! Write the code to {code_file} (or set TG_CODE and re-run)."
+                );
+                eprintln!("Waiting 5 minutes for code...");
+                let start = std::time::Instant::now();
+                loop {
+                    if start.elapsed().as_secs() > 300 {
+                        bail!("Timeout waiting for code");
+                    }
+                    if let Ok(c) = std::fs::read_to_string(code_file) {
+                        let c = c.trim().to_string();
+                        if !c.is_empty() {
+                            let _ = std::fs::remove_file(code_file);
+                            break c;
+                        }
+                    }
+                    tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
+                }
             }
         }
-    });
+    };
     let code = code.trim().to_string();
 
     match client.sign_in(&token, &code).await {
