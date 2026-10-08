@@ -88,3 +88,21 @@ pub async fn dispatch_tool_call(
     }
     anyhow::bail!("Unknown tool: {tool_name}")
 }
+
+// ---------------------------------------------------------------------------
+// Compatibility shims for `main.rs` (kept stable while modules were split).
+// ---------------------------------------------------------------------------
+
+/// All tool definitions, aggregated from every submodule.
+pub fn tool_definitions() -> Vec<ToolDefinition> {
+    all_tool_definitions()
+}
+
+/// Dispatch a tool call; errors propagate to the caller.
+pub async fn handle_tool_call(
+    client: &Client,
+    tool_name: &str,
+    args: &Value,
+) -> anyhow::Result<CallToolResult> {
+    dispatch_tool_call(client, tool_name, args).await
+}

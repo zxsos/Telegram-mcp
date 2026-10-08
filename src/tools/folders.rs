@@ -619,7 +619,7 @@ async fn get_folder(client: &Client, args: &Value) -> anyhow::Result<String> {
                 .collect()
         };
 
-    let mut data = match target {
+    let data = match target {
         tl::enums::DialogFilter::Default => bail!("Folder {folder_id} is the system folder."),
         tl::enums::DialogFilter::Filter(f) => json!({
             "id": folder_id,

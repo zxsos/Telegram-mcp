@@ -7,6 +7,9 @@ mod auth;
 mod mcp;
 mod setup;
 mod telegram;
+// Explicit path: the legacy `src/tools.rs` monolith may still exist on disk;
+// the modular `src/tools/` tree is authoritative.
+#[path = "tools/mod.rs"]
 mod tools;
 
 use grammers_client::Client;
