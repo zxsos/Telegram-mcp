@@ -1,6 +1,8 @@
 # Telegram MCP
 
-<img src="assets/icon.png" width="128" alt="Telegram MCP Icon">
+<p align="center">
+  <img src="assets/icon.png" width="128" alt="Telegram MCP Icon">
+</p>
 
 [中文版](README.zh-CN.md)
 
