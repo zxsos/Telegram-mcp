@@ -2,7 +2,7 @@
 
 轻量 Telegram MCP 服务器（Rust），用你的 Telegram 账号登录，可读你加入的所有群/频道（含私密群）。
 
-## 工具（36）
+## 工具（53）
 
 ### 基础
 | 工具 | 说明 |
@@ -60,7 +60,25 @@
 | `get_photo_sheet` | 照片缩略图列表 |
 | `inspect_document` | 查看文档内容 |
 
-*更多模块（消息、群组、联系人等）正在添加中。*
+### 联系人
+| 工具 | 说明 |
+|------|------|
+| `list_contacts` | 列出所有联系人 |
+| `search_contacts` | 搜索联系人 |
+| `get_contact_ids` | 获取联系人 ID 列表 |
+| `get_direct_chat_by_contact` | 按联系人找私聊 |
+| `get_contact_chats` | 联系人的共同群聊 |
+| `get_last_interaction` | 最近互动消息 |
+| `add_contact` | 添加联系人 |
+| `delete_contact` | 删除联系人 |
+| `block_user` | 拉黑用户 |
+| `unblock_user` | 解除拉黑 |
+| `import_contacts` | 批量导入联系人 |
+| `export_contacts` | 导出联系人 |
+| `get_blocked_users` | 黑名单列表 |
+| `send_contact` | 发送联系人名片 |
+
+*更多模块（消息、群组等）正在添加中。*
 
 ## 快速开始
 
