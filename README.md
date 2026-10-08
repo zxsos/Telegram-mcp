@@ -2,7 +2,7 @@
 
 轻量 Telegram MCP 服务器（Rust），用你的 Telegram 账号登录，可读你加入的所有群/频道（含私密群）。
 
-## 工具（53）
+## 工具（71）
 
 ### 基础
 | 工具 | 说明 |
@@ -78,7 +78,28 @@
 | `get_blocked_users` | 黑名单列表 |
 | `send_contact` | 发送联系人名片 |
 
-*更多模块（消息、群组等）正在添加中。*
+### 消息
+| 工具 | 说明 |
+|------|------|
+| `send_message` | 发送消息 |
+| `send_scheduled_message` | 发送定时消息 |
+| `get_scheduled_messages` | 查看定时消息 |
+| `delete_scheduled_message` | 删除定时消息 |
+| `list_messages` | 列出消息（支持搜索/日期过滤） |
+| `list_inline_buttons` | 列出消息的内联按钮 |
+| `press_inline_button` | 点击内联按钮 |
+| `transcribe_voice` | 语音转文字（暂不支持） |
+| `get_message_context` | 读消息上下文 |
+| `get_send_as` | 可用的发送身份 |
+| `forward_message` | 转发单条消息 |
+| `forward_messages` | 批量转发消息 |
+| `edit_message` | 编辑消息 |
+| `delete_message` | 删除消息 |
+| `delete_chat_history` | 清空聊天记录 |
+| `delete_messages_bulk` | 批量删除消息 |
+| `pin_message` | 置顶消息 |
+
+*更多模块（群组等）正在添加中。*
 
 ## 快速开始
 
