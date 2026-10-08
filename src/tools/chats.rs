@@ -48,6 +48,11 @@ fn opt_str<'a>(args: &'a Value, key: &str) -> Option<&'a str> {
     args.get(key).and_then(|v| v.as_str()).filter(|s| !s.is_empty())
 }
 
+/// Invoke a raw TL request, converting failures into `anyhow` errors.
+async fn invoke<R: tl::RemoteCall>(client: &Client, req: &R) -> Result<R::Return> {
+    client.invoke(req).await.map_err(|e| anyhow::anyhow!(e))
+}
+
 /// Resolve "@username" / "username" / "12345" to a full `Peer`.
 async fn resolve_peer(client: &Client, chat_id: &str) -> Result<Peer> {
     let chat_id = chat_id.trim();

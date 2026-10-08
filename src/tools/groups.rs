@@ -12,7 +12,7 @@ use super::{bool_arg, i64_arg, str_arg, usize_arg};
 use crate::mcp::{CallToolResult, ToolDefinition};
 use anyhow::{Context, bail};
 use grammers_client::Client;
-use grammers_session::types::{PeerKind, PeerRef};
+use grammers_session::types::{ChannelKind, PeerKind, PeerRef};
 use grammers_tl_types as tl;
 use serde_json::{Value, json};
 
@@ -23,9 +23,17 @@ use serde_json::{Value, json};
 /// Human kind name for a resolved peer (used in error messages).
 fn kind_name(pr: &PeerRef) -> &'static str {
     match pr.id.kind() {
-        PeerKind::User => "user",
+        PeerKind::User | PeerKind::UserSelf => "user",
         PeerKind::Chat => "basic group",
         PeerKind::Channel => "channel/supergroup",
+    }
+}
+
+/// Bot-API-safe bare id: None for the self-user sentinel (bare_id would panic).
+fn safe_bare_id(id: grammers_session::types::PeerId) -> Option<i64> {
+    match id.kind() {
+        PeerKind::UserSelf => None,
+        _ => Some(id.bare_id()),
     }
 }
 
@@ -34,7 +42,7 @@ async fn resolve_peer(client: &Client, value: &Value) -> anyhow::Result<PeerRef>
     if let Some(n) = value.as_i64() {
         let mut dialogs = client.iter_dialogs();
         while let Some(dialog) = dialogs.next().await.context("Failed to iterate dialogs")? {
-            if dialog.peer().id().bare_id() == Some(n) {
+            if safe_bare_id(dialog.peer().id()) == Some(n) {
                 return Ok(dialog.peer_ref());
             }
         }
@@ -55,10 +63,10 @@ async fn resolve_peer(client: &Client, value: &Value) -> anyhow::Result<PeerRef>
 /// Resolve and require a user peer (for membership-target arguments).
 async fn resolve_user_peer(client: &Client, value: &Value) -> anyhow::Result<PeerRef> {
     let pr = resolve_peer(client, value).await?;
-    if pr.id.kind() != PeerKind::User {
-        bail!("Expected a user, but the argument resolved to a {}", kind_name(&pr));
+    match pr.id.kind() {
+        PeerKind::User | PeerKind::UserSelf => Ok(pr),
+        _ => bail!("Expected a user, but the argument resolved to a {}", kind_name(&pr)),
     }
-    Ok(pr)
 }
 
 /// Best-effort display name for a peer (dialog title or bare id).
@@ -69,7 +77,7 @@ async fn peer_display_name(client: &Client, pr: &PeerRef) -> String {
             return dialog.peer().name().unwrap_or("(no name)").to_string();
         }
     }
-    format!("chat {}", pr.id.bare_id().unwrap_or(0))
+    format!("chat {}", safe_bare_id(pr.id).unwrap_or(0))
 }
 
 /// Require a channel/supergroup peer and return its InputChannel.
@@ -105,7 +113,10 @@ async fn channel_is_megagroup(client: &Client, pr: &PeerRef) -> Option<bool> {
         if dialog.peer_ref().id == pr.id
             && let grammers_client::peer::Peer::Channel(c) = dialog.peer()
         {
-            return Some(c.is_megagroup());
+            return Some(matches!(
+                c.kind(),
+                Some(ChannelKind::Megagroup) | Some(ChannelKind::Gigagroup)
+            ));
         }
     }
     None
@@ -127,7 +138,7 @@ fn invite_hash(link: &str) -> String {
 
 /// One-line "id | @username | name" rendering of a grammers User.
 fn user_line(user: &grammers_client::peer::User) -> String {
-    let id = user.id().bare_id().unwrap_or(0);
+    let id = safe_bare_id(user.id()).unwrap_or(0);
     let name = format!(
         "{} {}",
         user.first_name().unwrap_or(""),
@@ -229,8 +240,6 @@ fn banned_rights_all(all: bool) -> tl::types::ChatBannedRights {
         send_voices: all,
         send_docs: all,
         send_plain: all,
-        edit_rank: all,
-        send_reactions: all,
         until_date: 0,
     }
 }
@@ -312,7 +321,6 @@ fn admin_log_action_name(action: &tl::enums::ChannelAdminLogEventAction) -> &'st
         A::ToggleSignatureProfiles(_) => "toggle_signature_profiles",
         A::ParticipantSubExtend(_) => "participant_sub_extend",
         A::ToggleAutotranslation(_) => "toggle_autotranslation",
-        A::ParticipantEditRank(_) => "participant_edit_rank",
     }
 }
 
@@ -356,8 +364,7 @@ async fn create_group(client: &Client, args: &Value) -> anyhow::Result<String> {
                 .missing_invitees
                 .iter()
                 .map(|m| match m {
-                    tl::enums::MissingInvitee::User(m) => m.user_id.to_string(),
-                    tl::enums::MissingInvitee::Channel(m) => m.channel_id.to_string(),
+                    tl::enums::MissingInvitee::Invitee(m) => m.user_id.to_string(),
                 })
                 .collect();
             let mut out = match first_chat_id_of_updates(&u.updates) {
@@ -447,6 +454,7 @@ async fn invite_to_group(client: &Client, args: &Value) -> anyhow::Result<String
             Ok(out)
         }
         PeerKind::User => Ok("Error: cannot invite users to a user chat.".to_string()),
+        PeerKind::UserSelf => Ok("Error: cannot invite users to a user chat.".to_string()),
     }
 }
 
@@ -476,6 +484,7 @@ async fn leave_chat(client: &Client, args: &Value) -> anyhow::Result<String> {
             Ok(format!("Left basic group {name}."))
         }
         PeerKind::User => Ok("Error: this tool is for groups and channels only.".to_string()),
+        PeerKind::UserSelf => Ok("Error: this tool is for groups and channels only.".to_string()),
     }
 }
 
@@ -578,6 +587,7 @@ async fn edit_chat_title(client: &Client, args: &Value) -> anyhow::Result<String
                 .context("messages.editChatTitle failed")?;
         }
         PeerKind::User => return Ok("Error: cannot edit the title of a user chat.".to_string()),
+        PeerKind::UserSelf => return Ok("Error: cannot edit the title of a user chat.".to_string()),
     }
     Ok(format!("Chat title updated to '{title}'."))
 }
@@ -609,6 +619,7 @@ async fn edit_chat_photo(client: &Client, args: &Value) -> anyhow::Result<String
                 .context("messages.editChatPhoto failed")?;
         }
         PeerKind::User => return Ok("Error: cannot edit the photo of a user chat.".to_string()),
+        PeerKind::UserSelf => return Ok("Error: cannot edit the photo of a user chat.".to_string()),
     }
     Ok("Chat photo updated.".to_string())
 }
@@ -661,6 +672,7 @@ async fn delete_chat_photo(client: &Client, args: &Value) -> anyhow::Result<Stri
                 .context("messages.editChatPhoto failed")?;
         }
         PeerKind::User => return Ok("Error: cannot delete the photo of a user chat.".to_string()),
+        PeerKind::UserSelf => return Ok("Error: cannot delete the photo of a user chat.".to_string()),
     }
     Ok("Chat photo deleted.".to_string())
 }
@@ -696,7 +708,7 @@ async fn promote_admin(client: &Client, args: &Value) -> anyhow::Result<String> 
             channel,
             user_id: input_user_of(&user)?,
             admin_rights: tl::enums::ChatAdminRights::Rights(rights),
-            rank: Some(rank.to_string()),
+            rank: rank.to_string(),
         })
         .await
         .context("channels.editAdmin failed")?;
@@ -721,7 +733,7 @@ async fn demote_admin(client: &Client, args: &Value) -> anyhow::Result<String> {
             channel,
             user_id: input_user_of(&user)?,
             admin_rights: tl::enums::ChatAdminRights::Rights(admin_rights_from(None, false)),
-            rank: Some(String::new()),
+            rank: String::new(),
         })
         .await
         .context("channels.editAdmin failed")?;
@@ -779,7 +791,13 @@ async fn remove_user(client: &Client, args: &Value) -> anyhow::Result<String> {
     )
     .await?;
     let name = peer_display_name(client, &chat).await;
-    if user.id.bare_id() == Some(client.get_me().await?.id().bare_id()) {
+    let me_id = client.get_me().await?.id().bare_id();
+    let is_self = match user.id.kind() {
+        PeerKind::UserSelf => true,
+        PeerKind::User => safe_bare_id(user.id) == Some(me_id),
+        _ => false,
+    };
+    if is_self {
         return Ok("Error: remove_user cannot target the current account. Use leave_chat instead."
             .to_string());
     }
@@ -862,6 +880,7 @@ async fn remove_user(client: &Client, args: &Value) -> anyhow::Result<String> {
             }
         }
         PeerKind::User => Ok("Error: chat_id must be a group or channel, not a user.".to_string()),
+        PeerKind::UserSelf => Ok("Error: chat_id must be a group or channel, not a user.".to_string()),
     }
 }
 
@@ -898,8 +917,6 @@ async fn set_default_chat_permissions(client: &Client, args: &Value) -> anyhow::
                 send_voices: false,
                 send_docs: false,
                 send_plain: false,
-                edit_rank: false,
-                send_reactions: false,
                 until_date,
             }),
         })
@@ -959,7 +976,7 @@ async fn edit_admin_rights(client: &Client, args: &Value) -> anyhow::Result<Stri
             channel,
             user_id: input_user_of(&user)?,
             admin_rights: tl::enums::ChatAdminRights::Rights(rights),
-            rank: Some(rank.to_string()),
+            rank: rank.to_string(),
         })
         .await
         .context("channels.editAdmin failed")?;
@@ -1152,12 +1169,7 @@ async fn join_by_hash(client: &Client, hash: &str) -> anyhow::Result<String> {
         })
         .await;
     match result {
-        Ok(tl::enums::messages::ChatInviteJoinResult::Ok(_)) => {
-            Ok("Successfully joined chat via invite.".to_string())
-        }
-        Ok(tl::enums::messages::ChatInviteJoinResult::WebView(_)) => Ok(
-            "Join request sent; the chat requires admin approval or a webview flow.".to_string(),
-        ),
+        Ok(_) => Ok("Successfully joined chat via invite.".to_string()),
         Err(e) => {
             let msg = e.to_string().to_lowercase();
             if msg.contains("expired") {
@@ -1220,10 +1232,11 @@ async fn get_recent_actions(client: &Client, args: &Value) -> anyhow::Result<Str
             }
             let mut lines = vec![format!("Recent admin actions in {name}:")];
             for event in &r.events {
-                let action = admin_log_action_name(&event.action);
+                let tl::enums::ChannelAdminLogEvent::Event(e) = event;
+                let action = admin_log_action_name(&e.action);
                 lines.push(format!(
                     "- event {} | user {} | {action} | at {}",
-                    event.id, event.user_id, event.date
+                    e.id, e.user_id, e.date
                 ));
             }
             Ok(lines.join("\n"))

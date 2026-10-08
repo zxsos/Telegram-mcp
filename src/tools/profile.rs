@@ -389,9 +389,7 @@ async fn delete_profile_photo(client: &Client) -> Result<String> {
 async fn get_privacy_settings(client: &Client) -> Result<String> {
     let rules = client
         .invoke(&tl::functions::account::GetPrivacy {
-            key: tl::enums::InputPrivacyKey::StatusTimestamp(
-                tl::types::InputPrivacyKeyStatusTimestamp {},
-            ),
+            key: tl::enums::InputPrivacyKey::StatusTimestamp,
         })
         .await
         .context("failed to get privacy settings")?;
@@ -401,13 +399,9 @@ async fn get_privacy_settings(client: &Client) -> Result<String> {
 async fn set_privacy_settings(client: &Client, args: &Value) -> Result<String> {
     let key_name = str_arg(args, "key");
     let key = match key_name {
-        "status" => tl::enums::InputPrivacyKey::StatusTimestamp(
-            tl::types::InputPrivacyKeyStatusTimestamp {},
-        ),
-        "phone" => tl::enums::InputPrivacyKey::PhoneNumber(tl::types::InputPrivacyKeyPhoneNumber {}),
-        "profile_photo" => tl::enums::InputPrivacyKey::ProfilePhoto(
-            tl::types::InputPrivacyKeyProfilePhoto {},
-        ),
+        "status" => tl::enums::InputPrivacyKey::StatusTimestamp,
+        "phone" => tl::enums::InputPrivacyKey::PhoneNumber,
+        "profile_photo" => tl::enums::InputPrivacyKey::ProfilePhoto,
         other => bail!(
             "unsupported privacy key '{other}'; supported keys: status, phone, profile_photo"
         ),
@@ -472,9 +466,9 @@ async fn get_full_user(client: &Client, args: &Value) -> Result<String> {
         .and_then(|u| u.usernames.as_ref())
         .map(|list| {
             list.iter()
-                .filter_map(|un| match un {
-                    tl::enums::Username::Username(t) => Some(t.username.as_str()),
-                    _ => None,
+                .map(|un| {
+                    let tl::enums::Username::Username(t) = un;
+                    t.username.as_str()
                 })
                 .collect()
         })
@@ -487,13 +481,13 @@ async fn get_full_user(client: &Client, args: &Value) -> Result<String> {
             _ => None,
         });
 
-    let birthday = fu.birthday.as_ref().and_then(|b| match b {
-        tl::enums::Birthday::Birthday(t) => Some(if let Some(y) = t.year {
+    let birthday = fu.birthday.as_ref().map(|b| {
+        let tl::enums::Birthday::Birthday(t) = b;
+        if let Some(y) = t.year {
             format!("{y:04}-{month:02}-{day:02}", month = t.month, day = t.day)
         } else {
             format!("--{:02}-{:02}", t.month, t.day)
-        }),
-        _ => None,
+        }
     });
 
     let set_flags = |flags: &[(&str, bool)]| -> Value {
