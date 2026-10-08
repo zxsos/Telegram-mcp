@@ -26,7 +26,7 @@ Lightweight Telegram MCP server in Rust. Sign in with your Telegram account to r
 | `send_message` | Send a message |
 | `download_media` | Download photos/videos/files |
 | `search_messages` | Global message search |
-| ... | 120+ tools total (messages, groups, media, contacts, admin) |
+| ... | 124 tools total (messages, groups, media, contacts, admin) |
 
 ## Quick Start
 
