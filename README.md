@@ -2,7 +2,7 @@
 
 轻量 Telegram MCP 服务器（Rust），用你的 Telegram 账号登录，可读你加入的所有群/频道（含私密群）。
 
-## 工具（22）
+## 工具（36）
 
 ### 基础
 | 工具 | 说明 |
@@ -42,7 +42,25 @@
 | `disable_incoming_feed` | 停用消息流 |
 | `incoming_feed_status` | 消息流状态 |
 
-*更多模块（消息、群组、联系人、媒体等）正在添加中。*
+### 媒体
+| 工具 | 说明 |
+|------|------|
+| `send_file` | 发送文件（自动识别图片/文档） |
+| `send_album` | 发送相册（2-10 张） |
+| `download_media` | 下载媒体文件 |
+| `send_voice` | 发送语音 |
+| `upload_file` | 上传文件 |
+| `get_media_info` | 查看媒体信息 |
+| `get_sticker_sets` | 列出贴纸包 |
+| `send_sticker` | 发送贴纸 |
+| `get_gif_search` | 搜索 GIF |
+| `send_gif` | 发送 GIF（暂不支持） |
+| `list_photos` | 列出照片 |
+| `open_photo` | 打开照片（返回路径） |
+| `get_photo_sheet` | 照片缩略图列表 |
+| `inspect_document` | 查看文档内容 |
+
+*更多模块（消息、群组、联系人等）正在添加中。*
 
 ## 快速开始
 
