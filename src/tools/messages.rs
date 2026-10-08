@@ -322,7 +322,10 @@ async fn send_message(client: &Client, args: &Value) -> anyhow::Result<String> {
         bail!("message must not be empty");
     }
     check_parse_mode(args)?;
-    let reply_to = args.get("reply_to_message_id").and_then(|v| v.as_i64()).map(|v| v as i32);
+    let reply_to = args
+        .get("reply_to_message_id")
+        .and_then(|v| v.as_i64())
+        .map(|v| v as i32);
     let sent = if let Some(reply_id) = reply_to {
         let input = InputMessage::new().text(message).reply_to(Some(reply_id));
         client.send_message(peer, input).await?
