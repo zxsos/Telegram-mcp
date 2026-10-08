@@ -18,10 +18,10 @@ Lightweight Telegram MCP server in Rust. Sign in with your Telegram account to r
 ## Features
 
 <details>
-<summary><b>All 124 Tools 按模块展开</b></summary>
+<summary><b>All 124 Tools by Module</b></summary>
 
 <details>
-<summary>Messages 消息 (25)</summary>
+<summary>Messages (25)</summary>
 
 | Tool | Description |
 |------|-------------|
@@ -54,7 +54,7 @@ Lightweight Telegram MCP server in Rust. Sign in with your Telegram account to r
 </details>
 
 <details>
-<summary>Groups 群组管理 (30)</summary>
+<summary>Groups (30)</summary>
 
 | Tool | Description |
 |------|-------------|
@@ -92,7 +92,7 @@ Lightweight Telegram MCP server in Rust. Sign in with your Telegram account to r
 </details>
 
 <details>
-<summary>Chats 聊天 (13)</summary>
+<summary>Chats (13)</summary>
 
 | Tool | Description |
 |------|-------------|
@@ -113,7 +113,7 @@ Lightweight Telegram MCP server in Rust. Sign in with your Telegram account to r
 </details>
 
 <details>
-<summary>Media 媒体 (12)</summary>
+<summary>Media (12)</summary>
 
 | Tool | Description |
 |------|-------------|
@@ -133,7 +133,7 @@ Lightweight Telegram MCP server in Rust. Sign in with your Telegram account to r
 </details>
 
 <details>
-<summary>Contacts 联系人 (16)</summary>
+<summary>Contacts (16)</summary>
 
 | Tool | Description |
 |------|-------------|
@@ -157,7 +157,7 @@ Lightweight Telegram MCP server in Rust. Sign in with your Telegram account to r
 </details>
 
 <details>
-<summary>Profile 资料 (8)</summary>
+<summary>Profile (8)</summary>
 
 | Tool | Description |
 |------|-------------|
@@ -173,7 +173,7 @@ Lightweight Telegram MCP server in Rust. Sign in with your Telegram account to r
 </details>
 
 <details>
-<summary>Folders 文件夹 (10)</summary>
+<summary>Folders (10)</summary>
 
 | Tool | Description |
 |------|-------------|
@@ -191,7 +191,7 @@ Lightweight Telegram MCP server in Rust. Sign in with your Telegram account to r
 </details>
 
 <details>
-<summary>Accounts 账号 (1)</summary>
+<summary>Accounts (1)</summary>
 
 | Tool | Description |
 |------|-------------|
@@ -200,7 +200,7 @@ Lightweight Telegram MCP server in Rust. Sign in with your Telegram account to r
 </details>
 
 <details>
-<summary>Events 事件 (3)</summary>
+<summary>Events (3)</summary>
 
 | Tool | Description |
 |------|-------------|
@@ -211,7 +211,7 @@ Lightweight Telegram MCP server in Rust. Sign in with your Telegram account to r
 </details>
 
 <details>
-<summary>Legacy 兼容接口 (4)</summary>
+<summary>Legacy (4)</summary>
 
 | Tool | Description |
 |------|-------------|
@@ -223,7 +223,7 @@ Lightweight Telegram MCP server in Rust. Sign in with your Telegram account to r
 </details>
 
 <details>
-<summary>Other 其他 (2)</summary>
+<summary>Other (2)</summary>
 
 | Tool | Description |
 |------|-------------|
