@@ -1,0 +1,21 @@
+[package]
+name = "tg-mcp-monitor"
+version = "1.0.0"
+edition = "2024"
+description = "Telegram MCP server for monitoring chats (forked from telegram-mcp, MIT)"
+license = "MIT"
+
+[dependencies]
+anyhow = "1.0"
+# grammers 0.10.0 via git (crates.io 0.10.0 has glass_pumpkin API mismatch bug)
+grammers-client = { git = "https://github.com/lonami/grammers", rev = "fa7692e" }
+grammers-mtsender = { git = "https://github.com/lonami/grammers", rev = "fa7692e" }
+grammers-session = { git = "https://github.com/lonami/grammers", rev = "fa7692e" }
+grammers-tl-types = { git = "https://github.com/lonami/grammers", rev = "fa7692e" }
+rpassword = "7"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# trimmed tokio features (was "full")
+tokio = { version = "1", features = ["rt", "rt-multi-thread", "macros", "io-std", "io-util", "time", "sync", "net"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
