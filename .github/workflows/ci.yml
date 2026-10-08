@@ -10,20 +10,38 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt, clippy
-
       - name: Build
         run: cargo build --locked
 
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
       - name: Test
         run: cargo test --locked
 
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
       - name: Clippy
         run: cargo clippy --locked -- -D warnings
 
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
       - name: Format check
         run: cargo fmt --check
