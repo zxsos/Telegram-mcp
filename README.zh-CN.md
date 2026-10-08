@@ -328,6 +328,21 @@ TG_API_HASH = "your_api_hash"
 ```
 或用命令行：`codex mcp add telegram --command /absolute/path/to/telegram-mcp`
 
+**腾讯 WorkBuddy**（`~/.workbuddy/.mcp.json`）：
+```json
+{
+  "mcpServers": {
+    "telegram": {
+      "command": "/absolute/path/to/telegram-mcp",
+      "env": {
+        "TG_API_ID": "your_api_id",
+        "TG_API_HASH": "your_api_hash"
+      }
+    }
+  }
+}
+```
+
 > 提示：`command` 请写二进制文件的绝对路径（例如 `/home/user/telegram-mcp/target/release/telegram-mcp`）。图形界面客户端可能读不到你 shell 的 PATH。
 
 ### 使用示例
