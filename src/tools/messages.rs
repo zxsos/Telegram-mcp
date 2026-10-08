@@ -322,7 +322,13 @@ async fn send_message(client: &Client, args: &Value) -> anyhow::Result<String> {
         bail!("message must not be empty");
     }
     check_parse_mode(args)?;
-    let sent = client.send_message(peer, message).await?;
+    let reply_to = args.get("reply_to_message_id").and_then(|v| v.as_i64()).map(|v| v as i32);
+    let sent = if let Some(reply_id) = reply_to {
+        let input = InputMessage::new().text(message).reply_to(Some(reply_id));
+        client.send_message(peer, input).await?
+    } else {
+        client.send_message(peer, message).await?
+    };
     Ok(format!("Message sent successfully (id {}).", sent.id()))
 }
 
@@ -930,7 +936,8 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 "properties": {
                     "chat_id": { "description": "Numeric chat ID or @username" },
                     "message": { "type": "string", "description": "Message text" },
-                    "parse_mode": { "type": "string", "description": "md, html or plain (default plain)" }
+                    "parse_mode": { "type": "string", "description": "md, html or plain (default plain)" },
+                    "reply_to_message_id": { "type": "integer", "description": "Reply to (quote) a specific message ID" }
                 },
                 "required": ["chat_id", "message"]
             }),
