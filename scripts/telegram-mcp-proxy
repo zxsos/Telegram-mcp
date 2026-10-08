@@ -1,0 +1,38 @@
+#!/bin/bash
+# telegram-mcp-proxy: Run telegram-mcp via HTTP proxy tunnel
+# Usage: ./telegram-mcp-proxy [--auth] [mcp-args...]
+# Env: TG_API_ID, TG_API_HASH, TG_PHONE, TG_CODE, TG_2FA_PASSWORD
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROXY_CONF="/tmp/proxychains-telegram.conf"
+
+# Generate proxychains config from http_proxy env var
+if [ -n "$http_proxy" ]; then
+    # Parse http://user:pass@host:port
+    PROXY_URL="${http_proxy#http://}"
+    PROXY_AUTH="${PROXY_URL%@*}"
+    PROXY_HOSTPORT="${PROXY_URL#*@}"
+    PROXY_USER="${PROXY_AUTH%%:*}"
+    PROXY_PASS="${PROXY_AUTH#*:}"
+    PROXY_HOST="${PROXY_HOSTPORT%%:*}"
+    PROXY_PORT="${PROXY_HOSTPORT##*:}"
+    
+    # Resolve hostname to IP (proxychains needs IP)
+    PROXY_IP=$(getent hosts "$PROXY_HOST" | awk '{print $1}' | head -1)
+    [ -z "$PROXY_IP" ] && PROXY_IP="$PROXY_HOST"
+    
+    cat > "$PROXY_CONF" << EOF
+strict_chain
+proxy_dns
+tcp_read_time_out 15000
+tcp_connect_time_out 8000
+[ProxyList]
+http $PROXY_IP $PROXY_PORT $PROXY_USER $PROXY_PASS
+EOF
+else
+    echo "Warning: http_proxy not set, running without proxy" >&2
+    PROXY_CONF="/etc/proxychains4.conf"
+fi
+
+export PROXYCHAINS_CONF_FILE="$PROXY_CONF"
+exec proxychains4 -q "$SCRIPT_DIR/telegram-mcp" "$@"
