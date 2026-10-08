@@ -316,6 +316,17 @@ Config file locations:
 }
 ```
 
+**OpenAI Codex** (`~/.codex/config.toml`):
+```toml
+[mcp_servers.telegram]
+command = "/absolute/path/to/telegram-mcp"
+
+[mcp_servers.telegram.env]
+TG_API_ID = "your_api_id"
+TG_API_HASH = "your_api_hash"
+```
+Or via CLI: `codex mcp add telegram --command /absolute/path/to/telegram-mcp`
+
 > Tip: Use the absolute path to the binary (e.g. `/home/user/telegram-mcp/target/release/telegram-mcp`). GUI clients may not inherit your shell's PATH.
 
 ### Usage Examples
