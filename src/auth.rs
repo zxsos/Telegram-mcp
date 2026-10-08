@@ -101,12 +101,14 @@ pub async fn interactive_auth() -> Result<()> {
     eprintln!("  4. Copy the api_id (number) and api_hash (hex string)");
     eprintln!();
 
-    let api_id_str = rpassword::prompt_password("API ID: ")?;
+    let api_id_str = std::env::var("TG_API_ID")
+        .unwrap_or_else(|_| rpassword::prompt_password("API ID: ").unwrap());
     let api_id: i32 = api_id_str
         .trim()
         .parse()
         .context("API ID must be a number")?;
-    let api_hash = rpassword::prompt_password("API Hash: ")?;
+    let api_hash = std::env::var("TG_API_HASH")
+        .unwrap_or_else(|_| rpassword::prompt_password("API Hash: ").unwrap());
     let api_hash = api_hash.trim().to_string();
 
     store_config(api_id, &api_hash)?;
@@ -135,17 +137,35 @@ pub async fn interactive_auth() -> Result<()> {
     }
 
     // Request login code
-    let phone =
-        rpassword::prompt_password("Phone number (international format, e.g. +1234567890): ")?;
+    let phone = std::env::var("TG_PHONE").unwrap_or_else(|_| {
+        rpassword::prompt_password("Phone number (international format, e.g. +1234567890): ")
+            .unwrap()
+    });
     let phone = phone.trim().to_string();
 
     eprintln!("Requesting login code...");
-    let token = client
-        .request_login_code(&phone, &api_hash)
-        .await
-        .context("Failed to request login code")?;
+    let token = match client.request_login_code(&phone, &api_hash).await {
+        Ok(t) => t,
+        Err(e) if format!("{e:?}").contains("AUTH_RESTART") => {
+            eprintln!("Auth restart, waiting 10s and retrying...");
+            tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
+            client
+                .request_login_code(&phone, &api_hash)
+                .await
+                .context("Failed to request login code")?
+        }
+        Err(e) => return Err(e).context("Failed to request login code"),
+    };
 
-    let code = rpassword::prompt_password("Login code (check your Telegram app): ")?;
+    let code = std::env::var("TG_CODE").unwrap_or_else(|_| {
+        match rpassword::prompt_password("Login code (check your Telegram app): ") {
+            Ok(c) => c,
+            Err(_) => {
+                eprintln!("\nCode sent! Re-run with TG_CODE env var to complete login.");
+                std::process::exit(0);
+            }
+        }
+    });
     let code = code.trim().to_string();
 
     match client.sign_in(&token, &code).await {
@@ -156,7 +176,16 @@ pub async fn interactive_auth() -> Result<()> {
         Err(SignInError::PasswordRequired(password_token)) => {
             let hint = password_token.hint().unwrap_or("(no hint)");
             eprintln!("2FA password required. Hint: {hint}");
-            let password = rpassword::prompt_password("2FA Password: ")?;
+            let password =
+                std::env::var("TG_2FA_PASSWORD").unwrap_or_else(
+                    |_| match rpassword::prompt_password("2FA Password: ") {
+                        Ok(p) => p,
+                        Err(_) => {
+                            eprintln!("\nSet TG_2FA_PASSWORD env var to complete login.");
+                            std::process::exit(0);
+                        }
+                    },
+                );
 
             match client
                 .check_password(password_token, password.trim().as_bytes())

@@ -9,6 +9,7 @@ pub mod contacts;
 pub mod events;
 pub mod folders;
 pub mod groups;
+pub mod legacy;
 pub mod media;
 pub mod messages;
 pub mod profile;
@@ -46,6 +47,7 @@ pub fn all_tool_definitions() -> Vec<ToolDefinition> {
     defs.extend(events::tool_definitions());
     defs.extend(folders::tool_definitions());
     defs.extend(groups::tool_definitions());
+    defs.extend(legacy::tool_definitions());
     defs.extend(media::tool_definitions());
     defs.extend(messages::tool_definitions());
     defs.extend(profile::tool_definitions());
@@ -75,6 +77,9 @@ pub async fn dispatch_tool_call(
         return Ok(result);
     }
     if let Some(result) = groups::try_handle(client, tool_name, args).await? {
+        return Ok(result);
+    }
+    if let Some(result) = legacy::try_handle(client, tool_name, args).await? {
         return Ok(result);
     }
     if let Some(result) = media::try_handle(client, tool_name, args).await? {
