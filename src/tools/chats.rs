@@ -48,11 +48,6 @@ fn opt_str<'a>(args: &'a Value, key: &str) -> Option<&'a str> {
     args.get(key).and_then(|v| v.as_str()).filter(|s| !s.is_empty())
 }
 
-/// Invoke a raw TL request, converting failures into `anyhow` errors.
-async fn invoke<R: tl::RemoteCall>(client: &Client, req: &R) -> Result<R::Return> {
-    client.invoke(req).await.map_err(|e| anyhow::anyhow!(e))
-}
-
 /// Resolve "@username" / "username" / "12345" to a full `Peer`.
 async fn resolve_peer(client: &Client, chat_id: &str) -> Result<Peer> {
     let chat_id = chat_id.trim();
@@ -69,8 +64,7 @@ async fn resolve_peer(client: &Client, chat_id: &str) -> Result<Peer> {
         bail!("No chat found with id {id}. Use list_chats to find IDs.");
     }
     let username = chat_id.strip_prefix('@').unwrap_or(chat_id);
-    client
-        .resolve_username(username)
+    client.resolve_username(username)
         .await
         .map_err(|e| anyhow::anyhow!(e))?
         .with_context(|| format!("No user/chat found for @{username}"))
@@ -222,12 +216,11 @@ async fn h_subscribe_public_channel(client: &Client, args: &Value) -> Result<Str
         bail!("Can only subscribe to channels/supergroups, not this peer type.");
     }
     let name = peer_name(&peer);
-    match client
-        .invoke(&tl::functions::channels::JoinChannel {
-            channel: pref.into(),
-        })
-        .await
-    {
+    let join_result = client.invoke(&tl::functions::channels::JoinChannel {
+        channel: pref.into(),
+    })
+    .await;
+    match join_result {
         Ok(_) => Ok(format!("Subscribed to {name}.")),
         Err(InvocationError::Rpc(rpc)) if rpc.name == "USER_ALREADY_PARTICIPANT" => {
             Ok(format!("Already subscribed to {name}."))
@@ -245,17 +238,14 @@ async fn h_list_topics(client: &Client, args: &Value) -> Result<String> {
     forum_channel(&peer)?;
     let pref = peer_ref(&peer, &chat_id).await?;
 
-    let result = invoke(
-        client,
-        &tl::functions::messages::GetForumTopics {
-            peer: pref.into(),
-            q: opt_str(args, "search_query").map(str::to_string),
-            offset_date: 0,
-            offset_id: 0,
-            offset_topic,
-            limit,
-        },
-    )
+    let result = client.invoke(&tl::functions::messages::GetForumTopics {
+        peer: pref.into(),
+        q: opt_str(args, "search_query").map(str::to_string),
+        offset_date: 0,
+        offset_id: 0,
+        offset_topic,
+        limit,
+    })
     .await
     .context("Failed to list forum topics")?;
 
@@ -311,14 +301,11 @@ async fn h_enable_forum_topics(client: &Client, args: &Value) -> Result<String> 
     let pref = peer_ref(&peer, &chat_id).await?;
     let name = peer_name(&peer);
 
-    invoke(
-        client,
-        &tl::functions::channels::ToggleForum {
-            channel: pref.into(),
-            enabled: true,
-            tabs,
-        },
-    )
+    client.invoke(&tl::functions::channels::ToggleForum {
+        channel: pref.into(),
+        enabled: true,
+        tabs,
+    })
     .await
     .context("Failed to enable forum topics")?;
     Ok(format!("Forum topics enabled for {name}."))
@@ -357,18 +344,15 @@ async fn h_create_forum_topic(client: &Client, args: &Value) -> Result<String> {
         .unwrap_or(0)
         & i64::MAX;
 
-    let updates = invoke(
-        client,
-        &tl::functions::messages::CreateForumTopic {
-            title_missing: false,
-            peer: pref.into(),
-            title: truncate(title, 128),
-            icon_color: opt_i32(args, "icon_color"),
-            icon_emoji_id: opt_i64(args, "icon_emoji_id"),
-            random_id,
-            send_as: None,
-        },
-    )
+    let updates = client.invoke(&tl::functions::messages::CreateForumTopic {
+        title_missing: false,
+        peer: pref.into(),
+        title: truncate(title, 128),
+        icon_color: opt_i32(args, "icon_color"),
+        icon_emoji_id: opt_i64(args, "icon_emoji_id"),
+        random_id,
+        send_as: None,
+    })
     .await
     .context("Failed to create forum topic")?;
 
@@ -398,17 +382,14 @@ async fn h_edit_forum_topic(client: &Client, args: &Value) -> Result<String> {
     forum_channel(&peer)?;
     let pref = peer_ref(&peer, &chat_id).await?;
 
-    invoke(
-        client,
-        &tl::functions::messages::EditForumTopic {
-            peer: pref.into(),
-            topic_id,
-            title: title.clone(),
-            icon_emoji_id,
-            closed,
-            hidden,
-        },
-    )
+    client.invoke(&tl::functions::messages::EditForumTopic {
+        peer: pref.into(),
+        topic_id,
+        title: title.clone(),
+        icon_emoji_id,
+        closed,
+        hidden,
+    })
     .await
     .context("Failed to edit forum topic")?;
 
@@ -442,13 +423,10 @@ async fn h_delete_forum_topic(client: &Client, args: &Value) -> Result<String> {
     // the same request has to be sent again.
     let mut batches = 0;
     loop {
-        let res = invoke(
-            client,
-            &tl::functions::messages::DeleteTopicHistory {
-                peer: input_peer.clone(),
-                top_msg_id: topic_id,
-            },
-        )
+        let res = client.invoke(&tl::functions::messages::DeleteTopicHistory {
+            peer: input_peer.clone(),
+            top_msg_id: topic_id,
+        })
         .await
         .context("Failed to delete forum topic")?;
         batches += 1;
