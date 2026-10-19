@@ -273,3 +273,5 @@ Once connected, just talk to your AI assistant naturally:
 ## License
 
 Apache-2.0
+
+[![M8ven Score](https://m8ven.ai/badge/mcp/zxsos/telegram-mcp)](https://m8ven.ai/mcp/zxsos/telegram-mcp?s=readme)
