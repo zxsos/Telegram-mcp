@@ -18,7 +18,7 @@
 //! map (e.g. `Arc<Mutex<...>>`) with the tool handlers. Until then every
 //! tool below returns `not supported: ...` instead of silently misbehaving.
 
-use crate::mcp::{CallToolResult, ToolDefinition};
+use crate::mcp::{CallToolResult, ToolDefinition, annotations_for};
 use grammers_client::Client;
 use serde_json::{Value, json};
 
@@ -34,6 +34,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                     "chat_id": {"description": "Wait for THIS chat only (bare id or @username). Without it any unrelated conversation wakes the call."}
                 }
             }),
+            annotations: Some(annotations_for("wait_for_new_message")),
         },
         ToolDefinition {
             name: "wait_for_settled_message".into(),
@@ -46,6 +47,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                     "chat_id": {"description": "Wait for THIS chat only (bare id or @username)."}
                 }
             }),
+            annotations: Some(annotations_for("wait_for_settled_message")),
         },
         ToolDefinition {
             name: "enable_incoming_feed".into(),
@@ -56,16 +58,19 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                     "settle_ms": {"type": "integer", "description": "Quiet period before a burst is written (default 6000)", "default": 6000}
                 }
             }),
+            annotations: Some(annotations_for("enable_incoming_feed")),
         },
         ToolDefinition {
             name: "disable_incoming_feed".into(),
             description: "Disable the incoming event feed (stops writing to the feed file).".into(),
             input_schema: json!({"type": "object", "properties": {}}),
+            annotations: Some(annotations_for("disable_incoming_feed")),
         },
         ToolDefinition {
             name: "incoming_feed_status".into(),
             description: "Report whether the incoming event feed is enabled, its file path, and the watch command for waking an agent per event.".into(),
             input_schema: json!({"type": "object", "properties": {}}),
+            annotations: Some(annotations_for("incoming_feed_status")),
         },
     ]
 }

@@ -6,7 +6,7 @@ use grammers_client::peer::Peer;
 use grammers_session::types::PeerRef;
 use serde_json::Value;
 
-use crate::mcp::{CallToolResult, ToolDefinition};
+use crate::mcp::{CallToolResult, ToolDefinition, annotations_for};
 use crate::telegram::resolve;
 
 use super::{str_arg, usize_arg};
@@ -41,6 +41,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id", "query"]
             }),
+            annotations: Some(annotations_for("search_in_channel")),
         },
         ToolDefinition {
             name: "get_messages_context".into(),
@@ -55,6 +56,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id", "message_id"]
             }),
+            annotations: Some(annotations_for("get_messages_context")),
         },
         ToolDefinition {
             name: "get_profile".into(),
@@ -66,6 +68,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["username"]
             }),
+            annotations: Some(annotations_for("get_profile")),
         },
         ToolDefinition {
             name: "join_channel".into(),
@@ -77,6 +80,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["channel"]
             }),
+            annotations: Some(annotations_for("join_channel")),
         },
     ]
 }

@@ -5,7 +5,7 @@
 //! grammers 0.10 client API.
 
 use super::{bool_arg, i64_arg, str_arg, usize_arg};
-use crate::mcp::{CallToolResult, ToolDefinition};
+use crate::mcp::{CallToolResult, ToolDefinition, annotations_for};
 use anyhow::{Context, bail};
 use grammers_client::Client;
 use grammers_client::message::{InputMessage, Message};
@@ -913,6 +913,7 @@ fn def(name: &str, description: &str, input_schema: Value) -> ToolDefinition {
         name: name.into(),
         description: description.into(),
         input_schema,
+        annotations: Some(annotations_for(name)),
     }
 }
 

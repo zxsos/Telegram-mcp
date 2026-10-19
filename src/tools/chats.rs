@@ -4,7 +4,7 @@
 //! dialog listing, forum topics, mute/archive, read receipts, message links.
 
 use super::{bool_arg, i64_arg, str_arg, usize_arg};
-use crate::mcp::{CallToolResult, ToolDefinition};
+use crate::mcp::{CallToolResult, ToolDefinition, annotations_for};
 use anyhow::{Context, Result, bail};
 use grammers_client::peer::{Dialog, Peer};
 use grammers_client::{Client, InvocationError, tl};
@@ -908,6 +908,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 }),
                 &[],
             ),
+            annotations: Some(annotations_for("get_chats")),
         },
         ToolDefinition {
             name: "subscribe_public_channel".into(),
@@ -917,6 +918,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 json!({ "channel": { "type": "string", "description": "Channel username or numeric ID" } }),
                 &["channel"],
             ),
+            annotations: Some(annotations_for("subscribe_public_channel")),
         },
         ToolDefinition {
             name: "list_topics".into(),
@@ -930,6 +932,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 }),
                 &["chat_id"],
             ),
+            annotations: Some(annotations_for("list_topics")),
         },
         ToolDefinition {
             name: "enable_forum_topics".into(),
@@ -941,6 +944,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 }),
                 &["chat_id"],
             ),
+            annotations: Some(annotations_for("enable_forum_topics")),
         },
         ToolDefinition {
             name: "create_forum_topic".into(),
@@ -954,6 +958,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 }),
                 &["chat_id", "title"],
             ),
+            annotations: Some(annotations_for("create_forum_topic")),
         },
         ToolDefinition {
             name: "edit_forum_topic".into(),
@@ -969,6 +974,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 }),
                 &["chat_id", "topic_id"],
             ),
+            annotations: Some(annotations_for("edit_forum_topic")),
         },
         ToolDefinition {
             name: "delete_forum_topic".into(),
@@ -980,6 +986,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 }),
                 &["chat_id", "topic_id"],
             ),
+            annotations: Some(annotations_for("delete_forum_topic")),
         },
         ToolDefinition {
             name: "list_chats".into(),
@@ -995,11 +1002,13 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 }),
                 &[],
             ),
+            annotations: Some(annotations_for("list_chats")),
         },
         ToolDefinition {
             name: "get_chat".into(),
             description: "Get detailed information about a specific chat by ID or username.".into(),
             input_schema: schema(json!({ "chat_id": chat_id_prop() }), &["chat_id"]),
+            annotations: Some(annotations_for("get_chat")),
         },
         ToolDefinition {
             name: "search_public_chats".into(),
@@ -1011,6 +1020,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 }),
                 &["query"],
             ),
+            annotations: Some(annotations_for("search_public_chats")),
         },
         ToolDefinition {
             name: "resolve_username".into(),
@@ -1019,31 +1029,37 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 json!({ "username": { "type": "string", "description": "Username with or without @" } }),
                 &["username"],
             ),
+            annotations: Some(annotations_for("resolve_username")),
         },
         ToolDefinition {
             name: "get_full_chat".into(),
             description: "Get full info of a channel or group, including description/about text.".into(),
             input_schema: schema(json!({ "chat_id": chat_id_prop() }), &["chat_id"]),
+            annotations: Some(annotations_for("get_full_chat")),
         },
         ToolDefinition {
             name: "mute_chat".into(),
             description: "Mute notifications for a chat.".into(),
             input_schema: schema(json!({ "chat_id": chat_id_prop() }), &["chat_id"]),
+            annotations: Some(annotations_for("mute_chat")),
         },
         ToolDefinition {
             name: "unmute_chat".into(),
             description: "Unmute notifications for a chat.".into(),
             input_schema: schema(json!({ "chat_id": chat_id_prop() }), &["chat_id"]),
+            annotations: Some(annotations_for("unmute_chat")),
         },
         ToolDefinition {
             name: "archive_chat".into(),
             description: "Archive a chat.".into(),
             input_schema: schema(json!({ "chat_id": chat_id_prop() }), &["chat_id"]),
+            annotations: Some(annotations_for("archive_chat")),
         },
         ToolDefinition {
             name: "unarchive_chat".into(),
             description: "Unarchive a chat.".into(),
             input_schema: schema(json!({ "chat_id": chat_id_prop() }), &["chat_id"]),
+            annotations: Some(annotations_for("unarchive_chat")),
         },
         ToolDefinition {
             name: "get_common_chats".into(),
@@ -1056,6 +1072,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 }),
                 &["user_id"],
             ),
+            annotations: Some(annotations_for("get_common_chats")),
         },
         ToolDefinition {
             name: "get_message_read_by".into(),
@@ -1067,6 +1084,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 }),
                 &["chat_id", "message_id"],
             ),
+            annotations: Some(annotations_for("get_message_read_by")),
         },
         ToolDefinition {
             name: "get_message_link".into(),
@@ -1079,6 +1097,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 }),
                 &["chat_id", "message_id"],
             ),
+            annotations: Some(annotations_for("get_message_link")),
         },
     ]
 }

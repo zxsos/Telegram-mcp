@@ -6,7 +6,7 @@
 //! (rich text) is not supported by this build.
 
 use super::{bool_arg, i64_arg, str_arg};
-use crate::mcp::{CallToolResult, ToolDefinition};
+use crate::mcp::{CallToolResult, ToolDefinition, annotations_for};
 use anyhow::{Context, bail};
 use grammers_client::Client;
 use grammers_client::peer::Peer;
@@ -992,11 +992,13 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
             name: "get_folder_limits".into(),
             description: "Read effective Premium-aware folder, explicit-chat and pin limits from app config. Missing/unusable values are null, never invented defaults. Title limit uses UTF-16 units.".into(),
             input_schema: json!({"type": "object", "properties": {}}),
+            annotations: Some(annotations_for("get_folder_limits")),
         },
         ToolDefinition {
             name: "get_folder_snapshot".into(),
             description: "Read complete folder definitions and order without chat content. Private definition objects can be passed back as update_folder patches to restore state. Chat ids are bare numeric ids (see list_chats).".into(),
             input_schema: json!({"type": "object", "properties": {}}),
+            annotations: Some(annotations_for("get_folder_snapshot")),
         },
         ToolDefinition {
             name: "update_folder".into(),
@@ -1010,11 +1012,13 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["folder_id", "patch"]
             }),
+            annotations: Some(annotations_for("update_folder")),
         },
         ToolDefinition {
             name: "list_folders".into(),
             description: "Get all dialog folders (filters) with their IDs, names, and emoji. Returns a list of folders usable with the other folder tools.".into(),
             input_schema: json!({"type": "object", "properties": {}}),
+            annotations: Some(annotations_for("list_folders")),
         },
         ToolDefinition {
             name: "get_folder".into(),
@@ -1026,6 +1030,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["folder_id"]
             }),
+            annotations: Some(annotations_for("get_folder")),
         },
         ToolDefinition {
             name: "create_folder".into(),
@@ -1047,6 +1052,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["title"]
             }),
+            annotations: Some(annotations_for("create_folder")),
         },
         ToolDefinition {
             name: "add_chat_to_folder".into(),
@@ -1060,6 +1066,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["folder_id", "chat_id"]
             }),
+            annotations: Some(annotations_for("add_chat_to_folder")),
         },
         ToolDefinition {
             name: "remove_chat_from_folder".into(),
@@ -1072,6 +1079,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["folder_id", "chat_id"]
             }),
+            annotations: Some(annotations_for("remove_chat_from_folder")),
         },
         ToolDefinition {
             name: "delete_folder".into(),
@@ -1083,6 +1091,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["folder_id"]
             }),
+            annotations: Some(annotations_for("delete_folder")),
         },
         ToolDefinition {
             name: "reorder_folders".into(),
@@ -1094,6 +1103,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["folder_ids"]
             }),
+            annotations: Some(annotations_for("reorder_folders")),
         },
     ]
 }

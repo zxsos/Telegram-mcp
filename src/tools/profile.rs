@@ -4,7 +4,7 @@
 //! bot info/commands, user photos and online status.
 
 use super::{str_arg, usize_arg};
-use crate::mcp::{CallToolResult, ToolDefinition};
+use crate::mcp::{CallToolResult, ToolDefinition, annotations_for};
 use crate::telegram;
 use anyhow::{Context, Result, bail};
 use grammers_client::Client;
@@ -22,6 +22,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 "type": "object",
                 "properties": {}
             }),
+            annotations: Some(annotations_for("get_me")),
         },
         ToolDefinition {
             name: "update_profile".into(),
@@ -36,6 +37,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                     "about": { "type": "string", "description": "New bio/about text" }
                 }
             }),
+            annotations: Some(annotations_for("update_profile")),
         },
         ToolDefinition {
             name: "set_profile_photo".into(),
@@ -50,6 +52,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["file_path"]
             }),
+            annotations: Some(annotations_for("set_profile_photo")),
         },
         ToolDefinition {
             name: "delete_profile_photo".into(),
@@ -58,6 +61,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 "type": "object",
                 "properties": {}
             }),
+            annotations: Some(annotations_for("delete_profile_photo")),
         },
         ToolDefinition {
             name: "get_privacy_settings".into(),
@@ -66,6 +70,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 "type": "object",
                 "properties": {}
             }),
+            annotations: Some(annotations_for("get_privacy_settings")),
         },
         ToolDefinition {
             name: "set_privacy_settings".into(),
@@ -94,6 +99,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["key"]
             }),
+            annotations: Some(annotations_for("set_privacy_settings")),
         },
         ToolDefinition {
             name: "get_full_user".into(),
@@ -111,6 +117,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["user"]
             }),
+            annotations: Some(annotations_for("get_full_user")),
         },
         ToolDefinition {
             name: "get_bot_info".into(),
@@ -128,6 +135,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["bot_username"]
             }),
+            annotations: Some(annotations_for("get_bot_info")),
         },
         ToolDefinition {
             name: "set_bot_commands".into(),
@@ -156,6 +164,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["bot_username", "commands"]
             }),
+            annotations: Some(annotations_for("set_bot_commands")),
         },
         ToolDefinition {
             name: "get_user_photos".into(),
@@ -175,6 +184,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["user_id"]
             }),
+            annotations: Some(annotations_for("get_user_photos")),
         },
         ToolDefinition {
             name: "get_user_status".into(),
@@ -189,6 +199,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["user_id"]
             }),
+            annotations: Some(annotations_for("get_user_status")),
         },
     ]
 }

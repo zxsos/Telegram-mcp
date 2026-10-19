@@ -259,6 +259,7 @@ cargo build --release
 ./target/release/telegram-mcp --proxy socks5://user:pass@host:port --auth
 # 或设置 TG_PROXY 环境变量：
 # TG_PROXY=socks5://user:pass@host:port ./target/release/telegram-mcp --auth
+```
 
 ### 使用示例
 
@@ -274,4 +275,4 @@ cargo build --release
 
 Apache-2.0
 
-[![M8ven Score](https://m8ven.ai/badge/mcp/zxsos/telegram-mcp)](https://m8ven.ai/mcp/zxsos/telegram-mcp?s=readme)
+[![M8ven Score](https://m8ven.ai/badge/mcp/zxsos-telegram-mcp-1vkp7t?v=9154532cc2210c9e29ca4439e307cafe)](https://m8ven.ai/mcp/zxsos-telegram-mcp-1vkp7t?s=readme)

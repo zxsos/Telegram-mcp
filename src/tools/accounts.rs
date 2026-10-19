@@ -3,7 +3,7 @@
 //! Single-account build: `list_accounts` returns the profile of the
 //! currently authorized account.
 
-use crate::mcp::{CallToolResult, ToolDefinition};
+use crate::mcp::{CallToolResult, ToolDefinition, annotations_for};
 use grammers_client::Client;
 use grammers_tl_types as tl;
 use serde_json::Value;
@@ -16,6 +16,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
             "type": "object",
             "properties": {}
         }),
+        annotations: Some(annotations_for("list_accounts")),
     }]
 }
 

@@ -10,7 +10,7 @@
 //!   Telegram API, so these tools return `Err("not supported")`.
 
 use super::str_arg;
-use crate::mcp::{CallToolResult, ToolDefinition};
+use crate::mcp::{CallToolResult, ToolDefinition, annotations_for};
 use anyhow::{Context, Result, bail};
 use grammers_client::Client;
 use grammers_client::peer::Peer;
@@ -23,6 +23,7 @@ fn tool(name: &str, description: &str, input_schema: Value) -> ToolDefinition {
         name: name.into(),
         description: description.into(),
         input_schema,
+        annotations: Some(annotations_for(name)),
     }
 }
 

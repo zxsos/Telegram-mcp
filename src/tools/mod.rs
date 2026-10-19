@@ -93,3 +93,139 @@ pub async fn dispatch_tool_call(
     }
     anyhow::bail!("Unknown tool: {tool_name}")
 }
+
+#[cfg(test)]
+mod tests {
+    //! Tool surface quality tests.
+    //!
+    //! Verifies the MCP tool definitions meet quality standards:
+    //! - Every tool declares all four MCP annotations (readOnlyHint,
+    //!   destructiveHint, idempotentHint, openWorldHint)
+    //! - Tool names are unique
+    //! - Input schemas are valid
+
+    use super::all_tool_definitions;
+    use std::collections::HashSet;
+
+    /// Every tool must declare all four MCP annotations.
+    #[test]
+    fn all_tools_have_complete_annotations() {
+        let defs = all_tool_definitions();
+        assert!(!defs.is_empty(), "no tools defined");
+
+        let missing: Vec<_> = defs
+            .iter()
+            .filter(|d| d.annotations.is_none())
+            .map(|d| d.name.clone())
+            .collect();
+
+        assert!(
+            missing.is_empty(),
+            "tools missing annotations: {}",
+            missing.join(", ")
+        );
+    }
+
+    /// Annotations must serialize to the exact MCP field names as booleans.
+    #[test]
+    fn annotations_serialize_to_mcp_field_names() {
+        let defs = all_tool_definitions();
+
+        for def in &defs {
+            let ann = def
+                .annotations
+                .as_ref()
+                .unwrap_or_else(|| panic!("tool {} missing annotations", def.name));
+
+            let json = serde_json::to_value(ann).expect("annotations must serialize");
+            for field in [
+                "readOnlyHint",
+                "destructiveHint",
+                "idempotentHint",
+                "openWorldHint",
+            ] {
+                assert!(
+                    json.get(field).and_then(|v| v.as_bool()).is_some(),
+                    "tool {} annotation field {} must be an explicit boolean",
+                    def.name,
+                    field
+                );
+            }
+        }
+    }
+
+    /// Tool names must be unique across the whole surface.
+    #[test]
+    fn tool_names_are_unique() {
+        let defs = all_tool_definitions();
+        let mut seen = HashSet::new();
+        let mut dupes = Vec::new();
+
+        for def in &defs {
+            if !seen.insert(def.name.clone()) {
+                dupes.push(def.name.clone());
+            }
+        }
+
+        assert!(
+            dupes.is_empty(),
+            "duplicate tool names: {}",
+            dupes.join(", ")
+        );
+    }
+
+    /// Every tool must have a non-empty description and a valid input schema.
+    #[test]
+    fn tools_have_description_and_valid_schema() {
+        let defs = all_tool_definitions();
+
+        for def in &defs {
+            assert!(
+                !def.description.trim().is_empty(),
+                "tool {} has empty description",
+                def.name
+            );
+            assert!(
+                def.input_schema.is_object(),
+                "tool {} inputSchema must be a JSON object",
+                def.name
+            );
+            assert_eq!(
+                def.input_schema.get("type").and_then(|t| t.as_str()),
+                Some("object"),
+                "tool {} inputSchema.type must be \"object\"",
+                def.name
+            );
+        }
+    }
+
+    /// Annotation consistency: destructive tools marked destructive,
+    /// read-only tools never destructive.
+    #[test]
+    fn annotation_consistency() {
+        let defs = all_tool_definitions();
+
+        for def in &defs {
+            let ann = def.annotations.as_ref().unwrap();
+            let name = def.name.as_str();
+
+            if name.starts_with("delete_") || name == "ban_user" {
+                assert!(
+                    ann.destructive_hint,
+                    "tool {name} deletes data but destructiveHint is false"
+                );
+                assert!(
+                    !ann.read_only_hint,
+                    "tool {name} deletes data but readOnlyHint is true"
+                );
+            }
+
+            if ann.read_only_hint {
+                assert!(
+                    !ann.destructive_hint,
+                    "tool {name} is read-only but destructiveHint is true"
+                );
+            }
+        }
+    }
+}

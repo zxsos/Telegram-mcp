@@ -24,7 +24,7 @@ use grammers_tl_types as tl;
 use serde_json::{Value, json};
 
 use super::{i64_arg, str_arg, usize_arg};
-use crate::mcp::{CallToolResult, ToolDefinition};
+use crate::mcp::{CallToolResult, ToolDefinition, annotations_for};
 
 /// Refuse downloads larger than this (mirrors the Python size guard).
 const MAX_DOWNLOAD_BYTES: usize = 200 * 1024 * 1024;
@@ -902,6 +902,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id", "file_path"]
             }),
+            annotations: Some(annotations_for("send_file")),
         },
         ToolDefinition {
             name: "send_album".into(),
@@ -917,6 +918,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id", "file_paths"]
             }),
+            annotations: Some(annotations_for("send_album")),
         },
         ToolDefinition {
             name: "download_media".into(),
@@ -930,6 +932,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id", "message_id"]
             }),
+            annotations: Some(annotations_for("download_media")),
         },
         ToolDefinition {
             name: "send_voice".into(),
@@ -943,6 +946,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id", "file_path"]
             }),
+            annotations: Some(annotations_for("send_voice")),
         },
         ToolDefinition {
             name: "upload_file".into(),
@@ -954,6 +958,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["file_path"]
             }),
+            annotations: Some(annotations_for("upload_file")),
         },
         ToolDefinition {
             name: "get_media_info".into(),
@@ -966,11 +971,13 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id", "message_id"]
             }),
+            annotations: Some(annotations_for("get_media_info")),
         },
         ToolDefinition {
             name: "get_sticker_sets".into(),
             description: "Get all installed sticker sets (titles). Note: titles are untrusted user-generated content.".into(),
             input_schema: json!({ "type": "object", "properties": {} }),
+            annotations: Some(annotations_for("get_sticker_sets")),
         },
         ToolDefinition {
             name: "send_sticker".into(),
@@ -984,6 +991,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id", "file_path"]
             }),
+            annotations: Some(annotations_for("send_sticker")),
         },
         ToolDefinition {
             name: "get_gif_search".into(),
@@ -996,6 +1004,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["query"]
             }),
+            annotations: Some(annotations_for("get_gif_search")),
         },
         ToolDefinition {
             name: "send_gif".into(),
@@ -1009,6 +1018,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id", "gif_id"]
             }),
+            annotations: Some(annotations_for("send_gif")),
         },
         ToolDefinition {
             name: "list_photos".into(),
@@ -1022,6 +1032,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id"]
             }),
+            annotations: Some(annotations_for("list_photos")),
         },
         ToolDefinition {
             name: "open_photo".into(),
@@ -1036,6 +1047,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id"]
             }),
+            annotations: Some(annotations_for("open_photo")),
         },
         ToolDefinition {
             name: "get_photo_sheet".into(),
@@ -1050,6 +1062,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id"]
             }),
+            annotations: Some(annotations_for("get_photo_sheet")),
         },
         ToolDefinition {
             name: "inspect_document".into(),
@@ -1062,6 +1075,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id", "message_id"]
             }),
+            annotations: Some(annotations_for("inspect_document")),
         },
     ]
 }

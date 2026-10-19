@@ -9,7 +9,7 @@
 //! strings. User ids likewise.
 
 use super::{bool_arg, i64_arg, str_arg, usize_arg};
-use crate::mcp::{CallToolResult, ToolDefinition};
+use crate::mcp::{CallToolResult, ToolDefinition, annotations_for};
 use anyhow::{Context, bail};
 use grammers_client::Client;
 use grammers_session::types::{ChannelKind, PeerKind, PeerRef};
@@ -1270,6 +1270,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["title", "user_ids"]
             }),
+            annotations: Some(annotations_for("create_group")),
         },
         ToolDefinition {
             name: "invite_to_group".into(),
@@ -1283,6 +1284,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["group_id", "user_ids"]
             }),
+            annotations: Some(annotations_for("invite_to_group")),
         },
         ToolDefinition {
             name: "leave_chat".into(),
@@ -1294,6 +1296,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id"]
             }),
+            annotations: Some(annotations_for("leave_chat")),
         },
         ToolDefinition {
             name: "get_participants".into(),
@@ -1308,6 +1311,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id"]
             }),
+            annotations: Some(annotations_for("get_participants")),
         },
         ToolDefinition {
             name: "create_channel".into(),
@@ -1322,6 +1326,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["title"]
             }),
+            annotations: Some(annotations_for("create_channel")),
         },
         ToolDefinition {
             name: "edit_chat_title".into(),
@@ -1334,6 +1339,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id", "title"]
             }),
+            annotations: Some(annotations_for("edit_chat_title")),
         },
         ToolDefinition {
             name: "edit_chat_photo".into(),
@@ -1347,6 +1353,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id", "file_path"]
             }),
+            annotations: Some(annotations_for("edit_chat_photo")),
         },
         ToolDefinition {
             name: "edit_chat_about".into(),
@@ -1360,6 +1367,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id", "about"]
             }),
+            annotations: Some(annotations_for("edit_chat_about")),
         },
         ToolDefinition {
             name: "delete_chat_photo".into(),
@@ -1371,6 +1379,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id"]
             }),
+            annotations: Some(annotations_for("delete_chat_photo")),
         },
         ToolDefinition {
             name: "promote_admin".into(),
@@ -1386,6 +1395,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["group_id", "user_id"]
             }),
+            annotations: Some(annotations_for("promote_admin")),
         },
         ToolDefinition {
             name: "demote_admin".into(),
@@ -1398,6 +1408,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["group_id", "user_id"]
             }),
+            annotations: Some(annotations_for("demote_admin")),
         },
         ToolDefinition {
             name: "ban_user".into(),
@@ -1410,6 +1421,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id", "user_id"]
             }),
+            annotations: Some(annotations_for("ban_user")),
         },
         ToolDefinition {
             name: "unban_user".into(),
@@ -1422,6 +1434,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id", "user_id"]
             }),
+            annotations: Some(annotations_for("unban_user")),
         },
         ToolDefinition {
             name: "remove_user".into(),
@@ -1435,6 +1448,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id", "user_id"]
             }),
+            annotations: Some(annotations_for("remove_user")),
         },
         ToolDefinition {
             name: "set_default_chat_permissions".into(),
@@ -1459,6 +1473,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id"]
             }),
+            annotations: Some(annotations_for("set_default_chat_permissions")),
         },
         ToolDefinition {
             name: "toggle_slow_mode".into(),
@@ -1472,6 +1487,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id"]
             }),
+            annotations: Some(annotations_for("toggle_slow_mode")),
         },
         ToolDefinition {
             name: "edit_admin_rights".into(),
@@ -1498,6 +1514,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id", "user_id"]
             }),
+            annotations: Some(annotations_for("edit_admin_rights")),
         },
         ToolDefinition {
             name: "get_admins".into(),
@@ -1509,6 +1526,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id"]
             }),
+            annotations: Some(annotations_for("get_admins")),
         },
         ToolDefinition {
             name: "get_member_admin_status".into(),
@@ -1522,6 +1540,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id", "user_id"]
             }),
+            annotations: Some(annotations_for("get_member_admin_status")),
         },
         ToolDefinition {
             name: "get_banned_users".into(),
@@ -1533,6 +1552,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id"]
             }),
+            annotations: Some(annotations_for("get_banned_users")),
         },
         ToolDefinition {
             name: "get_invite_link".into(),
@@ -1544,6 +1564,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id"]
             }),
+            annotations: Some(annotations_for("get_invite_link")),
         },
         ToolDefinition {
             name: "join_chat_by_link".into(),
@@ -1555,6 +1576,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["link"]
             }),
+            annotations: Some(annotations_for("join_chat_by_link")),
         },
         ToolDefinition {
             name: "export_chat_invite".into(),
@@ -1566,6 +1588,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id"]
             }),
+            annotations: Some(annotations_for("export_chat_invite")),
         },
         ToolDefinition {
             name: "import_chat_invite".into(),
@@ -1577,6 +1600,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["hash"]
             }),
+            annotations: Some(annotations_for("import_chat_invite")),
         },
         ToolDefinition {
             name: "get_recent_actions".into(),
@@ -1589,6 +1613,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
                 },
                 "required": ["chat_id"]
             }),
+            annotations: Some(annotations_for("get_recent_actions")),
         },
     ]
 }
